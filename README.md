@@ -1,6 +1,6 @@
 # go-mpfr
 
-A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding.
+A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding. This is not ready for production use yet, but we welcome contributions!
 
 ## Features
 
@@ -60,3 +60,5 @@ We welcome contributions! See our [CONTRIBUTING](https://github.com/mexicantexan
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE] (https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
+
+Inspiration for this project comes from [GMP](https://github.com/ncw/gmp)!
