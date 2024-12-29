@@ -1,8 +1,5 @@
 # go-mpfr
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/USERNAME/go-mpfr.svg)](https://pkg.go.dev/github.com/USERNAME/go-mpfr)
-[![CI](https://github.com/USERNAME/go-mpfr/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/go-mpfr/actions)
-
 A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding.
 
 ## Features
@@ -27,7 +24,7 @@ brew install mpfr gmp
 
 Then, install the package using `go get`:
 ```bash
-TODO: go get ADD_IN_REPO
+go get github.com/mexicantexan/go-mpfr
 ```
 
 ## Usage
@@ -38,7 +35,7 @@ package main
 
 import (
     "fmt"
-    "TODO ADD_IN_REPO"
+    "github.com/mexicantexan/go-mpfr"
 )
 
 func main() {
