@@ -171,6 +171,32 @@ func (f *Float) Div(x, y *Float, rnd Rnd) *Float {
 	return f
 }
 
+// Pow sets f to x^y (x raised to the power y), with the given rounding mode, and returns f.
+func (f *Float) Pow(x, y *Float, rnd Rnd) *Float {
+	x.doinit()
+	y.doinit()
+	f.doinit()
+	C.mpfr_pow(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Exp sets f to e^x (the exponential of x), with the given rounding mode, and returns f.
+func (f *Float) Exp(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_exp(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Log sets f to the natural logarithm of x (ln(x)), with the given rounding mode, and returns f.
+// If x <= 0, MPFR will return NaN or -Inf depending on the input value.
+func (f *Float) Log(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_log(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
 // Cmp compares f and x and returns -1 if f < x, 0 if f == x, +1 if f > x.
 func (f *Float) Cmp(x *Float) int {
 	f.doinit()
