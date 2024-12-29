@@ -56,7 +56,7 @@ go run main.go
 ```
 
 ## Contributing
-We welcome contributions! See our CONTRIBUTING guide (TODO) for how to get started.
+We welcome contributions! See our [CONTRIBUTING](https://github.com/mexicantexan/go-mpfr/blob/master/CONTRIBUTING.md) guide (TODO) for how to get started.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE (TODO)  file for details.
+This project is licensed under the MIT License - see the [LICENSE] (https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
