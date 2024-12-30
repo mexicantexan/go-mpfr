@@ -574,3 +574,74 @@ func TestSetBigFloat(t *testing.T) {
 		t.Errorf("SetBigFloat(1.618033988749894) got %v; want %v", got, 1.618033988749894)
 	}
 }
+
+func TestInt64(t *testing.T) {
+	f := mpfr.FromFloat64(123.45)
+	got := f.Int64()
+	want := int64(123)
+	if got != want {
+		t.Errorf("Int64() got %v; want %v", got, want)
+	}
+}
+
+func TestUint64(t *testing.T) {
+	f := mpfr.FromFloat64(123.45)
+	got := f.Uint64()
+	want := uint64(123)
+	if got != want {
+		t.Errorf("Uint64() got %v; want %v", got, want)
+	}
+}
+
+func TestFloat64(t *testing.T) {
+	f := mpfr.FromFloat64(math.Pi)
+	got := f.Float64()
+	want := math.Pi
+	if math.Abs(got-want) > 1e-15 {
+		t.Errorf("Float64() got %v; want %v", got, want)
+	}
+}
+
+func TestBigInt(t *testing.T) {
+	f := mpfr.FromFloat64(12345.67)
+	result := new(big.Int)
+	f.BigInt(result)
+	want := big.NewInt(12345)
+	if result.Cmp(want) != 0 {
+		t.Errorf("BigInt() got %v; want %v", result, want)
+	}
+
+	f = mpfr.FromFloat64(0.000123456)
+	result = new(big.Int)
+	f.BigInt(result)
+	want = big.NewInt(0) // 0 for very small fractional values
+	if result.Cmp(want) != 0 {
+		t.Errorf("BigInt() with small fraction got %v; want %v", result, want)
+	}
+}
+
+func TestBigFloat(t *testing.T) {
+	tests := []struct {
+		input    float64
+		expected string // Expected string representation of the big.Float
+	}{
+		{12345.67, "12345.67"},
+		{0.000123456, "0.000123456"},
+		{math.Pi, "3.1415926535897931"},
+		{-math.E, "-2.718281828459045"},
+	}
+
+	bigFloatEps := big.NewFloat(1e-16)
+
+	for _, tt := range tests {
+		f := mpfr.FromFloat64(tt.input)
+		result := new(big.Float)
+		f.BigFloat(result)
+
+		got := result.Text('g', -1) // Get the string representation
+		diff := new(big.Float).Sub(result, big.NewFloat(tt.input))
+		if diff.Cmp(bigFloatEps) > 0 {
+			t.Errorf("BigFloat(%v) got %v; want %v", tt.input, got, tt.expected)
+		}
+	}
+}

@@ -21,6 +21,7 @@ import (
 	"math/big"
 	"runtime"
 	"strconv"
+	"strings"
 	"unsafe"
 )
 
@@ -451,8 +452,8 @@ func FromInt(value int) *Float {
 
 // FromInt64 initializes an MPFR Float from a Go int64.
 //
-//	TODO: needs a better implementat
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string convers
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func FromInt64(value int64) *Float {
 	f := NewFloat()
 	if value >= math.MinInt32 && value <= math.MaxInt32 {
@@ -466,11 +467,9 @@ func FromInt64(value int64) *Float {
 	return f
 }
 
-oat from a Go uint64.
-//
-//	TODO: needs a better implemen
+ a better implementation that doesn't rely on string conv
 // FromUint64 initializes an MPFR Float from a Go uint64.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func FromUint64(value uint64) *Float {
 	f := NewFloat()
 	if value <= math.MaxUint32 {
@@ -489,11 +488,13 @@ func FromFloat64(value float64) *Float {
 	f := NewFloat()
 	C.mpfr_set_d(&f.mpfr[0], C.double(value), C.MPFR_RNDN)
 	return f
-i
 }
 
+ conversion
+func FromBigInt(value *big.Int) *Float {
+	f := N
 // FromBigInt initializes an MPFR Float from a math/big.Int.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func FromBigInt(value *big.Int) *Float {
 	f := NewFloat()
 	if value == nil {
@@ -511,11 +512,11 @@ func FromBigInt(value *big.Int) *Float {
 	}
 
 	return f
-t
+o
 }
 
 // FromBigFloat initializes an MPFR Float from a math/big.Float.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func FromBigFloat(value *big.Float) *Float {
 	f := NewFloat()
 	if value == nil {
@@ -554,11 +555,11 @@ func (f *Float) SetInt64(value int64) *Float {
 		f.SetBigInt(bigVal)
 	}
 	return f
-b
+4
 }
 
 // SetUint64 sets the value of the Float to the specified uint64.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func (f *Float) SetUint64(value uint64) *Float {
 	f.doinit()
 	if value <= math.MaxUint32 {
@@ -580,7 +581,7 @@ e
 }
 
 // SetBigInt sets the value of the Float to the specified math/big.Int.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func (f *Float) SetBigInt(value *big.Int) *Float {
 	f.doinit()
 	if value == nil {
@@ -597,11 +598,11 @@ func (f *Float) SetBigInt(value *big.Int) *Float {
 		panic("SetBigInt: failed to parse big.Int")
 	}
 	return f
-D
+a
 }
 
 // SetBigFloat sets the value of the Float to the specified math/big.Float.
-//	TODO: needs a better implementation
+//	TODO: needs a better implementation that doesn't rely on string conversion
 func (f *Float) SetBigFloat(value *big.Float) *Float {
 	f.doinit()
 	if value == nil {
@@ -618,4 +619,108 @@ func (f *Float) SetBigFloat(value *big.Float) *Float {
 		panic("SetBigFloat: failed to parse big.Float")
 	}
 	return f
+}
+
+// Int64 converts the Float to an int64.
+// After the conversion, the Float is cleared to conserve memory.
+func (f *Float) Int64() int64 {
+	// Clean up the Float after use
+	defer f.Clear()
+	return int64(C.mpfr_get_si(&f.mpfr[0], C.MPFR_RNDN))
+}
+
+// Uint64 converts the Float to a uint64.
+// After the conversion, the Float is cleared to conserve memory.
+func (f *Float) Uint64() uint64 {
+	// Clean up the Float after use
+	defer f.Clear()
+	return uint64(C.mpfr_get_ui(&f.mpfr[0], C.MPFR_RNDN))
+}
+
+// Float64 converts the Float to a float64.
+// After the conversion, the Float is cleared to conserve memory.
+func (f *Float) Float64() float64 {
+	// Clean up the Float after use
+	defer f.Clear()
+	return float64(C.mpfr_get_d(&f.mpfr[0], C.MPFR_RNDN))
+}
+
+
+// BigInt converts the Float to a math/big.Int.
+// It writes the result into the provided big.Int and clears the Float after conversion.
+//	TODO: needs a better implementation that doesn't rely on string conversion
+func (f *Float) BigInt(result *big.Int) {
+	defer f.Clear() // Clean up the Float after use
+
+	var exp C.mpfr_exp_t
+	cstr := C.mpfr_get_str(nil, &exp, 10, 0, &f.mpfr[0], C.MPFR_RNDN)
+	if cstr == nil {
+		panic("BigInt: mpfr_get_str failed")
+	}
+	defer C.mpfr_free_str(cstr)
+
+	mantissa := C.GoString(cstr)
+
+	reneg := false
+	if mantissa[0] == '-' {
+		reneg = true
+		mantissa = mantissa[1:]
+	}
+
+	// Handle cases where the exponent is larger than or within the length of the mantissa
+	if int(exp) >= len(mantissa) {
+		mantissa += strings.Repeat("0", int(exp)-len(mantissa))
+	} else if int(exp) < len(mantissa) && exp > 0 {
+		// Insert a decimal point at the correct position
+		mantissa = mantissa[:int(exp)] + "." + mantissa[int(exp):]
+	} else if exp < 0 {
+		// Handle negative exponents: prepend zeros
+		mantissa = "0." + strings.Repeat("0", -int(exp)) + mantissa
+	}
+
+	if reneg == true {
+		mantissa = "-" + mantissa
+	}
+
+	result.SetString(mantissa, 10)
+}
+
+
+// BigFloat converts the Float to a math/big.Float.
+// It writes the result into the provided big.Float and clears the Float after conversion.
+//	TODO: needs a better implementation that doesn't rely on string conversion
+func (f *Float) BigFloat(result *big.Float) {
+	defer f.Clear() // Clean up the Float after use
+
+	var exp C.mpfr_exp_t
+	cstr := C.mpfr_get_str(nil, &exp, 10, 0, &f.mpfr[0], C.MPFR_RNDN)
+	if cstr == nil {
+		panic("BigFloat: mpfr_get_str failed")
+	}
+	defer C.mpfr_free_str(cstr)
+
+	mantissa := C.GoString(cstr)
+
+	reneg := false
+	if mantissa[0] == '-' {
+		reneg = true
+		mantissa = mantissa[1:]
+	}
+	// Handle cases where the exponent is larger than or within the length of the mantissa
+	if int(exp) >= len(mantissa) {
+		mantissa += strings.Repeat("0", int(exp)-len(mantissa))
+	} else if int(exp) < len(mantissa) && exp > 0 {
+		// Insert a decimal point at the correct position
+		mantissa = mantissa[:int(exp)] + "." + mantissa[int(exp):]
+	} else if exp < 0 {
+		// Handle negative exponents: prepend zeros
+		mantissa = "0." + strings.Repeat("0", -int(exp)) + mantissa
+	}
+
+	if reneg == true {
+		mantissa = "-" + mantissa
+	}
+
+	// Parse the formatted mantissa into a big.Float
+	result.SetString(mantissa)
 }
