@@ -3,7 +3,7 @@
 A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding. This is not ready for production use yet, but we welcome contributions!
 
 ## Inspiration/The Why
-
+This was sparked due to a need for high-precision floating-point calculations in Go. The standard library's `math/big` package is great for most applications, but it lacks certain features that mpfr supports out of the box. This project is being used by another in order to perform some high precision calculations, which is why all of the functionality of mpfr has not been implemented yet. Only the necessary functions have been implemented so far.
 
 ## Features
 
