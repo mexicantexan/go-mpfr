@@ -61,3 +61,10 @@ We welcome contributions! See our [CONTRIBUTING](https://github.com/mexicantexan
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
+
+## Support the Project
+If you find this project helpful and would like to support its development:
+
+<a href="https://buymeacoffee.com/mexicantexan" target="_blank">
+<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important; width: 217px !important;">
+</a>
