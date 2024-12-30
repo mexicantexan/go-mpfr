@@ -2,6 +2,9 @@
 
 A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding. This is not ready for production use yet, but we welcome contributions!
 
+## Inspiration/The Why
+
+
 ## Features
 
 - High-precision floating-point calculations using MPFR.
@@ -35,13 +38,13 @@ package main
 
 import (
     "fmt"
-    "github.com/mexicantexan/go-mpfr"
+    mpfr "github.com/mexicantexan/go-mpfr"
 )
 
 func main() {
-    a := mpfr.New()
-    b := mpfr.New()
-    sum := mpfr.New()
+    a := mpfr.NewFloat()
+    b := mpfr.NewFloat()
+    sum := mpfr.NewFloat()
 
     a.SetDouble(1.5, mpfr.RoundNearestTiesToEven)
     b.SetDouble(2.25, mpfr.RoundNearestTiesToEven)

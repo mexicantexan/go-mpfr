@@ -2,8 +2,9 @@ package mpfr_test
 
 import (
 	"fmt"
+	"github.com/mexicantexan/go-mpfr"
 	"math"
-	"mpfr"
+	"math/big"
 	"strconv"
 	"strings"
 	"testing"
@@ -463,5 +464,63 @@ func TestFitsAll(t *testing.T) {
 	// doing a naive check for now
 	if bf.FitsUint(mpfr.RoundToNearest) {
 		t.Error("FitsUint(1e20) = true; want false on a 32-bit system")
+	}
+}
+
+func TestSetPrec(t *testing.T) {
+	f := mpfr.NewFloat()
+	f.SetFloat64(3.141592653589793, mpfr.RoundToNearest)
+
+	// Set precision to 128 bits
+	f.SetPrec(128)
+	got := f.GetFloat64(mpfr.RoundToNearest)
+	want := 0.0 // After setting precision, value should be cleared
+
+	if got != want {
+		t.Errorf("SetPrec(128) got %v; want %v", got, want)
+	}
+}
+
+func TestFromInt(t *testing.T) {
+	f := mpfr.FromInt(-42)
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != -42.0 {
+		t.Errorf("FromInt(-42) got %v; want -42", got)
+	}
+}
+
+func TestFromInt64(t *testing.T) {
+	f := mpfr.FromInt64(int64(9223372036854775807))
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != 9.223372036854776e+18 {
+		t.Errorf("FromInt64(9223372036854775807) got %v; want 9.223372036854776e+18", got)
+	}
+}
+
+func TestFromUint64(t *testing.T) {
+	f := mpfr.FromUint64(uint64(18446744073709551615))
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != 1.8446744073709552e+19 {
+		t.Errorf("FromUint64(18446744073709551615) got %v; want 1.8446744073709552e+19", got)
+	}
+}
+
+func TestFromFloat64(t *testing.T) {
+	f := mpfr.FromFloat64(math.Pi)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-math.Pi) > 1e-15 {
+		t.Errorf("FromFloat64(math.Pi) got %v; want %v", got, math.Pi)
+	}
+}
+
+func TestFromBigInt(t *testing.T) {
+	bi := big.NewInt(-1234567890123456789)
+	f := mpfr.FromBigInt(bi)
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != -1.2345678901234568e+18 {
+		t.Errorf("FromBigInt(-1234567890123456789) got %v; want -1.2345678901234568e+18", got)
+	}
+}
+
+func TestFromBigFloat(t *testing.T) {
+	bf := big.NewFloat(1.618033988749894)
+	f := mpfr.FromBigFloat(bf)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-1.618033988749894) > 1e-15 {
+		t.Errorf("FromBigFloat(1.618033988749894) got %v; want %v", got, 1.618033988749894)
 	}
 }

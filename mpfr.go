@@ -17,6 +17,8 @@ package mpfr
 */
 import "C"
 import (
+	"math"
+	"math/big"
 	"runtime"
 	"strconv"
 	"unsafe"
@@ -378,6 +380,15 @@ func (f *Float) Floor(x *Float) *Float {
 	return f
 }
 
+// SetPrec sets the precision of the Float to the specified number of bits.
+// This method changes the precision and clears the content of f, so the value will need to be reinitialized.
+func (f *Float) SetPrec(prec uint) *Float {
+	f.doinit()
+	C.mpfr_set_prec(&f.mpfr[0], C.mpfr_prec_t(prec))
+	f.SetFloat64(0.0, RoundToNearest)
+	return f
+}
+
 // FitsIntmax returns true if f (rounded by rnd) fits in an intmax_t.
 func (f *Float) FitsIntmax(rnd Rnd) bool {
 	f.doinit()
@@ -436,4 +447,94 @@ type FloatError struct {
 
 func (e *FloatError) Error() string {
 	return e.Msg
+}
+
+// FromInt initializes an MPFR Float from a Go int.
+func FromInt(value int) *Float {
+	f := NewFloat()
+	C.mpfr_set_si(&f.mpfr[0], C.long(value), C.MPFR_RNDN)
+	return f
+}
+
+// FromInt64 initializes an MPFR Float from a Go int64.
+//
+//	TODO: needs a better implementation
+func FromInt64(value int64) *Float {
+	f := NewFloat()
+	if value >= math.MinInt32 && value <= math.MaxInt32 {
+		// Use mpfr_set_si directly for smaller values
+		C.mpfr_set_si(&f.mpfr[0], C.long(value), C.MPFR_RNDN)
+	} else {
+		// Use a math/big.Int for larger values
+		bigVal := big.NewInt(value)
+		return FromBigInt(bigVal)
+	}
+	return f
+}
+
+// FromUint64 initializes an MPFR Float from a Go uint64.
+//
+//	TODO: needs a better implementation
+func FromUint64(value uint64) *Float {
+	f := NewFloat()
+	if value <= math.MaxUint32 {
+		// Use mpfr_set_ui directly for smaller values
+		C.mpfr_set_ui(&f.mpfr[0], C.ulong(value), C.MPFR_RNDN)
+	} else {
+		// Use a math/big.Int for larger values
+		bigVal := new(big.Int).SetUint64(value)
+		return FromBigInt(bigVal)
+	}
+	return f
+}
+
+// FromFloat64 initializes an MPFR Float from a Go float64.
+func FromFloat64(value float64) *Float {
+	f := NewFloat()
+	C.mpfr_set_d(&f.mpfr[0], C.double(value), C.MPFR_RNDN)
+	return f
+}
+
+// FromBigInt initializes an MPFR Float from a math/big.Int.
+//
+//	TODO: needs a better implementation
+func FromBigInt(value *big.Int) *Float {
+	f := NewFloat()
+	if value == nil {
+		C.mpfr_set_zero(&f.mpfr[0], 1) // Initialize to zero
+		return f
+	}
+
+	// Convert math/big.Int to a string and parse with MPFR
+	str := value.Text(10)
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.mpfr_set_str(&f.mpfr[0], cstr, 10, C.MPFR_RNDN) != 0 {
+		panic("FromBigInt: failed to parse big.Int")
+	}
+
+	return f
+}
+
+// FromBigFloat initializes an MPFR Float from a math/big.Float.
+//
+//	TODO: needs a better implementation
+func FromBigFloat(value *big.Float) *Float {
+	f := NewFloat()
+	if value == nil {
+		C.mpfr_set_zero(&f.mpfr[0], 1) // Initialize to zero
+		return f
+	}
+
+	// Convert math/big.Float to a string, then parse with MPFR
+	str := value.Text('g', -1) // Decimal format
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.mpfr_set_str(&f.mpfr[0], cstr, 10, C.MPFR_RNDN) != 0 {
+		panic("FromBigFloat: failed to parse big.Float")
+	}
+
+	return f
 }
