@@ -362,12 +362,85 @@ func TestAtanh(t *testing.T) {
 	}
 }
 
-func TestCbrt(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(27.0)
-	got := mpfr.NewFloat().Cbrt(x, mpfr.RoundToNearest)
-	want := 3.0 // cbrt(27) = 3
-	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
-		t.Errorf("Cbrt(27) got %v; want %v", got, want)
+func TestRoots(t *testing.T) {
+	tests := []struct {
+		x        float64  // Input value
+		rnd      mpfr.Rnd // Rounding mode
+		expected string   // Expected result as a string
+		method   string   // Method to test ("Cbrt" or "Sqrt")
+	}{
+		{8, mpfr.RoundToNearest, "2", "Cbrt"},
+		{-27, mpfr.RoundToNearest, "-3", "Cbrt"},
+		{9, mpfr.RoundToNearest, "3", "Sqrt"},
+		{16, mpfr.RoundToNearest, "4", "Sqrt"},
+	}
+
+	for _, tt := range tests {
+		x := mpfr.FromFloat64(tt.x)
+		result := mpfr.NewFloat()
+
+		switch tt.method {
+		case "Cbrt":
+			result.Cbrt(x, tt.rnd)
+		case "Sqrt":
+			result.Sqrt(x, tt.rnd)
+		default:
+			t.Fatalf("unknown method: %s", tt.method)
+		}
+
+		got := result.Float64()
+		expected, _ := strconv.ParseFloat(tt.expected, 64)
+		closeEnough := almostEqual(got, expected)
+		if !closeEnough {
+			t.Errorf("%s(%v) got %v; want %v", tt.method, tt.x, got, tt.expected)
+		}
+	}
+}
+
+func TestRootUI(t *testing.T) {
+	tests := []struct {
+		x           float64  // Input value
+		k           uint     // Root degree
+		rnd         mpfr.Rnd // Rounding mode
+		expected    string   // Expected result as a string
+		shouldPanic bool     // Whether the operation should panic
+	}{
+		{32, 5, mpfr.RoundToNearest, "2", false}, // 5th root of 32
+		{8, 3, mpfr.RoundToNearest, "2", false},  // Cube root
+		{16, 4, mpfr.RoundToNearest, "2", false}, // 4th root
+		{27, 3, mpfr.RoundToNearest, "3", false}, // Cube root
+		{10, 0, mpfr.RoundToNearest, "", true},   // Invalid k
+		{-32, 2, mpfr.RoundToNearest, "", true},  // Even root of a negative number
+	}
+
+	for _, tt := range tests {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tt.shouldPanic {
+						t.Errorf("Root(%v, %d) unexpectedly panicked: %v", tt.x, tt.k, r)
+					}
+				} else if tt.shouldPanic {
+					t.Errorf("Root(%v, %d) did not panic as expected", tt.x, tt.k)
+				}
+			}()
+
+			x := mpfr.FromFloat64(tt.x)
+			result := mpfr.NewFloat()
+
+			if !tt.shouldPanic {
+				result.RootUI(x, tt.k, tt.rnd)
+				got := result.Float64()
+				expected, _ := strconv.ParseFloat(tt.expected, 64)
+				closeEnough := almostEqual(got, expected)
+				if !closeEnough {
+					t.Errorf("Root(%v, %d) got %v; want %v", tt.x, tt.k, got, tt.expected)
+				}
+			} else {
+				out := result.RootUI(x, tt.k, tt.rnd)
+				println(out.Float64())
+			}
+		}()
 	}
 }
 

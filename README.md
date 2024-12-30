@@ -33,24 +33,20 @@ go get github.com/mexicantexan/go-mpfr
 ## Usage
 
 A quick example:
+
 ```go
 package main
 
 import (
-    "fmt"
-    mpfr "github.com/mexicantexan/go-mpfr"
+	"fmt"
+	mpfr "github.com/mexicantexan/go-mpfr"
 )
 
 func main() {
-    a := mpfr.NewFloat()
-    b := mpfr.NewFloat()
-    sum := mpfr.NewFloat()
-
-    a.SetDouble(1.5, mpfr.RoundNearestTiesToEven)
-    b.SetDouble(2.25, mpfr.RoundNearestTiesToEven)
-
-    sum.Add(a, b, mpfr.RoundNearestTiesToEven)
-    fmt.Println("1.5 + 2.25 =", sum.GetDouble(mpfr.RoundNearestTiesToEven))
+	x := mpfr.NewFloat().SetFloat64(1.5)
+	y := mpfr.NewFloat().SetFloat64(2.25)
+	sum := mpfr.NewFloat().Add(x, y, mpfr.RoundToNearest)
+	fmt.Printf("1.5 + 2.25 = %v\n", sum.Float64())
 }
 ```
 Run it:

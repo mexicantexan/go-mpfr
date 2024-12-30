@@ -182,8 +182,8 @@ func (f *Float) Quo(x, y *Float, rnd Rnd) *Float {
 
 	result := C.mpfr_div(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(rnd))
 	if result != 0 {
-		// Log inexact results for debugging, but don't panic
-		fmt.Printf("Quo: inexact result with code = %d\n", result)
+		// Debug Log inexact results for debugging, but don't panic
+		// fmt.Printf("Quo: inexact result with code = %d\n", result)
 	}
 
 	return f
@@ -302,6 +302,41 @@ func (f *Float) Cbrt(x *Float, rnd Rnd) *Float {
 	x.doinit()
 	f.doinit()
 	C.mpfr_cbrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Sqrt sets f to the square root of x with the specified rounding mode and returns f.
+func (f *Float) Sqrt(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+
+	if C.mpfr_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd)) != 0 {
+		panic("Sqrt: failed to compute square root")
+	}
+
+	return f
+}
+
+// RootUI sets f to the k-th root of x with the specified rounding mode and returns f.
+// If k is zero, it panics with an invalid argument error.
+func (f *Float) RootUI(x *Float, k uint, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+
+	if k == 0 {
+		panic("Root: k must be greater than 0")
+	}
+
+	// Perform the root operation using mpfr_rootn_ui
+	if C.mpfr_rootn_ui(&f.mpfr[0], &x.mpfr[0], C.ulong(k), C.mpfr_rnd_t(rnd)) != 0 {
+		panic(fmt.Sprintf("Root: failed to compute the %d-th root", k))
+	}
+
+	// check if NaN
+	if C.mpfr_nan_p(&f.mpfr[0]) != 0 {
+		panic("Root: result is NaN")
+	}
+
 	return f
 }
 
