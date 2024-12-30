@@ -84,14 +84,7 @@ const (
 func NewFloat() *Float {
 	f := &Float{}
 	f.doinit()
-	f.SetFloat64(0.0, RoundToNearest)
-	return f
-}
-
-// SetFloat64 sets f to the given float64 value (x), using the specified rounding mode.
-func (f *Float) SetFloat64(x float64, rnd Rnd) *Float {
-	f.doinit()
-	C.mpfr_set_d(&f.mpfr[0], C.double(x), C.mpfr_rnd_t(rnd))
+	f.SetFloat64(0.0)
 	return f
 }
 
@@ -385,7 +378,7 @@ func (f *Float) Floor(x *Float) *Float {
 func (f *Float) SetPrec(prec uint) *Float {
 	f.doinit()
 	C.mpfr_set_prec(&f.mpfr[0], C.mpfr_prec_t(prec))
-	f.SetFloat64(0.0, RoundToNearest)
+	f.SetFloat64(0.0)
 	return f
 }
 
@@ -458,6 +451,7 @@ func FromInt(value int) *Float {
 
 // FromInt64 initializes an MPFR Float from a Go int64.
 //
+//	TODO: needs a better implementat
 //	TODO: needs a better implementation
 func FromInt64(value int64) *Float {
 	f := NewFloat()
@@ -472,8 +466,10 @@ func FromInt64(value int64) *Float {
 	return f
 }
 
-// FromUint64 initializes an MPFR Float from a Go uint64.
+oat from a Go uint64.
 //
+//	TODO: needs a better implemen
+// FromUint64 initializes an MPFR Float from a Go uint64.
 //	TODO: needs a better implementation
 func FromUint64(value uint64) *Float {
 	f := NewFloat()
@@ -493,10 +489,10 @@ func FromFloat64(value float64) *Float {
 	f := NewFloat()
 	C.mpfr_set_d(&f.mpfr[0], C.double(value), C.MPFR_RNDN)
 	return f
+i
 }
 
 // FromBigInt initializes an MPFR Float from a math/big.Int.
-//
 //	TODO: needs a better implementation
 func FromBigInt(value *big.Int) *Float {
 	f := NewFloat()
@@ -515,10 +511,10 @@ func FromBigInt(value *big.Int) *Float {
 	}
 
 	return f
+t
 }
 
 // FromBigFloat initializes an MPFR Float from a math/big.Float.
-//
 //	TODO: needs a better implementation
 func FromBigFloat(value *big.Float) *Float {
 	f := NewFloat()
@@ -536,5 +532,90 @@ func FromBigFloat(value *big.Float) *Float {
 		panic("FromBigFloat: failed to parse big.Float")
 	}
 
+	return f
+}
+
+// SetInt sets the value of the Float to the specified int.
+func (f *Float) SetInt(value int) *Float {
+	f.doinit()
+	C.mpfr_set_si(&f.mpfr[0], C.long(value), C.MPFR_RNDN)
+	return f
+}
+
+// SetInt64 sets the value of the Float to the specified int64.
+func (f *Float) SetInt64(value int64) *Float {
+	f.doinit()
+	if value >= math.MinInt32 && value <= math.MaxInt32 {
+		// Use mpfr_set_si directly for smaller values
+		C.mpfr_set_si(&f.mpfr[0], C.long(value), C.MPFR_RNDN)
+	} else {
+		// Use a math/big.Int for larger values
+		bigVal := big.NewInt(value)
+		f.SetBigInt(bigVal)
+	}
+	return f
+b
+}
+
+// SetUint64 sets the value of the Float to the specified uint64.
+//	TODO: needs a better implementation
+func (f *Float) SetUint64(value uint64) *Float {
+	f.doinit()
+	if value <= math.MaxUint32 {
+		// Use mpfr_set_ui directly for smaller values
+		C.mpfr_set_ui(&f.mpfr[0], C.ulong(value), C.MPFR_RNDN)
+	} else {
+		// Use a math/big.Int for larger values
+		bigVal := new(big.Int).SetUint64(value)
+		f.SetBigInt(bigVal)
+	}
+	return f
+}
+
+func (f *Float) SetFloat64(value float64) *Float {
+	f.doinit()
+	C.mpfr_set_d(&f.mpfr[0], C.double(value), C.MPFR_RNDN)
+	return f
+e
+}
+
+// SetBigInt sets the value of the Float to the specified math/big.Int.
+//	TODO: needs a better implementation
+func (f *Float) SetBigInt(value *big.Int) *Float {
+	f.doinit()
+	if value == nil {
+		C.mpfr_set_zero(&f.mpfr[0], 1) // Set to zero if nil
+		return f
+	}
+
+	// Convert math/big.Int to string and set it using mpfr_set_str
+	str := value.Text(10)
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.mpfr_set_str(&f.mpfr[0], cstr, 10, C.MPFR_RNDN) != 0 {
+		panic("SetBigInt: failed to parse big.Int")
+	}
+	return f
+D
+}
+
+// SetBigFloat sets the value of the Float to the specified math/big.Float.
+//	TODO: needs a better implementation
+func (f *Float) SetBigFloat(value *big.Float) *Float {
+	f.doinit()
+	if value == nil {
+		C.mpfr_set_zero(&f.mpfr[0], 1) // Set to zero if nil
+		return f
+	}
+
+	// Convert math/big.Float to string and set it using mpfr_set_str
+	str := value.Text('g', -1)
+	cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.mpfr_set_str(&f.mpfr[0], cstr, 10, C.MPFR_RNDN) != 0 {
+		panic("SetBigFloat: failed to parse big.Float")
+	}
 	return f
 }

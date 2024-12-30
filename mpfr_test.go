@@ -59,7 +59,7 @@ func TestSetFloat64GetFloat64(t *testing.T) {
 	f := mpfr.NewFloat()
 
 	// Set to 3.1415
-	f.SetFloat64(3.1415, mpfr.RoundToNearest)
+	f.SetFloat64(3.1415)
 	got := f.GetFloat64(mpfr.RoundToNearest)
 	want := 3.1415
 	if got != want {
@@ -91,7 +91,7 @@ func TestSetString(t *testing.T) {
 
 func TestStringMethod(t *testing.T) {
 	f := mpfr.NewFloat()
-	f.SetFloat64(1.2345, mpfr.RoundToNearest)
+	f.SetFloat64(1.2345)
 
 	s := f.String()
 	if s == "" {
@@ -100,8 +100,8 @@ func TestStringMethod(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(1.5, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(2.25, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(1.5)
+	y := mpfr.NewFloat().SetFloat64(2.25)
 	sum := mpfr.NewFloat().Add(x, y, mpfr.RoundToNearest)
 
 	got := sum.GetFloat64(mpfr.RoundToNearest)
@@ -112,8 +112,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(5.0, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(3.1, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(5.0)
+	y := mpfr.NewFloat().SetFloat64(3.1)
 	diff := mpfr.NewFloat().Sub(x, y, mpfr.RoundToNearest)
 
 	got := diff.GetFloat64(mpfr.RoundToNearest)
@@ -125,8 +125,8 @@ func TestSub(t *testing.T) {
 }
 
 func TestMul(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(3.25, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(2.0)
+	y := mpfr.NewFloat().SetFloat64(3.25)
 	product := mpfr.NewFloat().Mul(x, y, mpfr.RoundToNearest)
 
 	got := product.GetFloat64(mpfr.RoundToNearest)
@@ -137,8 +137,8 @@ func TestMul(t *testing.T) {
 }
 
 func TestDiv(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(10.0, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(4.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(10.0)
+	y := mpfr.NewFloat().SetFloat64(4.0)
 	quotient := mpfr.NewFloat().Div(x, y, mpfr.RoundToNearest)
 
 	got := quotient.GetFloat64(mpfr.RoundToNearest)
@@ -149,9 +149,9 @@ func TestDiv(t *testing.T) {
 }
 
 func TestCmp(t *testing.T) {
-	a := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
-	b := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
-	c := mpfr.NewFloat().SetFloat64(3.0, mpfr.RoundToNearest)
+	a := mpfr.NewFloat().SetFloat64(2.0)
+	b := mpfr.NewFloat().SetFloat64(2.0)
+	c := mpfr.NewFloat().SetFloat64(3.0)
 
 	if a.Cmp(b) != 0 {
 		t.Errorf("Cmp(2.0, 2.0) != 0; want 0 (equal)")
@@ -165,7 +165,7 @@ func TestCmp(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	orig := mpfr.NewFloat().SetFloat64(1.23, mpfr.RoundToNearest)
+	orig := mpfr.NewFloat().SetFloat64(1.23)
 	copy := mpfr.NewFloat().Copy(orig)
 
 	if copy.Cmp(orig) != 0 {
@@ -173,14 +173,14 @@ func TestCopy(t *testing.T) {
 	}
 
 	// Modify the original and ensure copy is unaffected.
-	orig.SetFloat64(9.99, mpfr.RoundToNearest)
+	orig.SetFloat64(9.99)
 	if copy.Cmp(orig) == 0 {
 		t.Errorf("Changing the original also changed the copy; want them independent.")
 	}
 }
 
 func TestClear(t *testing.T) {
-	f := mpfr.NewFloat().SetFloat64(3.14159, mpfr.RoundToNearest)
+	f := mpfr.NewFloat().SetFloat64(3.14159)
 	f.Clear()
 	// After Clear, f should no longer be used. A minimal test is to check we can call f.Clear again.
 	// This shouldn't crash but does nothing.
@@ -189,8 +189,8 @@ func TestClear(t *testing.T) {
 }
 
 func TestPow(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(3.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(2.0)
+	y := mpfr.NewFloat().SetFloat64(3.0)
 
 	result := mpfr.NewFloat()
 	result.Pow(x, y, mpfr.RoundToNearest)
@@ -203,7 +203,7 @@ func TestPow(t *testing.T) {
 }
 
 func TestExp(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest) // e^1 = e
+	x := mpfr.NewFloat().SetFloat64(1.0) // e^1 = e
 
 	result := mpfr.NewFloat()
 	result.Exp(x, mpfr.RoundToNearest)
@@ -216,7 +216,7 @@ func TestExp(t *testing.T) {
 }
 
 func TestLog(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(2.718281828459045, mpfr.RoundToNearest) // ln(e) = 1
+	x := mpfr.NewFloat().SetFloat64(2.718281828459045) // ln(e) = 1
 
 	result := mpfr.NewFloat()
 	result.Log(x, mpfr.RoundToNearest)
@@ -229,7 +229,7 @@ func TestLog(t *testing.T) {
 }
 
 func TestAbs(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(-3.5, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(-3.5)
 	got := mpfr.NewFloat().Abs(x, mpfr.RoundToNearest)
 	want := 3.5
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -238,7 +238,7 @@ func TestAbs(t *testing.T) {
 }
 
 func TestAcos(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Acos(x, mpfr.RoundToNearest)
 	want := 0.0 // acos(1) = 0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -248,7 +248,7 @@ func TestAcos(t *testing.T) {
 
 func TestAcosh(t *testing.T) {
 	// acosh(1) = 0
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Acosh(x, mpfr.RoundToNearest)
 	want := 0.0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -258,8 +258,8 @@ func TestAcosh(t *testing.T) {
 
 func TestAgm(t *testing.T) {
 	// For x=1, y=9, AGM is about 3.9362355...(approx)
-	a := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
-	b := mpfr.NewFloat().SetFloat64(9.0, mpfr.RoundToNearest)
+	a := mpfr.NewFloat().SetFloat64(1.0)
+	b := mpfr.NewFloat().SetFloat64(9.0)
 	got := mpfr.NewFloat().Agm(a, b, mpfr.RoundToNearest)
 
 	want := 3.9362355
@@ -271,7 +271,7 @@ func TestAgm(t *testing.T) {
 }
 
 func TestAsin(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Asin(x, mpfr.RoundToNearest)
 	want := 0.0 // asin(0) = 0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -280,7 +280,7 @@ func TestAsin(t *testing.T) {
 }
 
 func TestAsinh(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Asinh(x, mpfr.RoundToNearest)
 	want := 0.0 // asinh(0) = 0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -289,7 +289,7 @@ func TestAsinh(t *testing.T) {
 }
 
 func TestAtan(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Atan(x, mpfr.RoundToNearest)
 	want := 0.0 // atan(0) = 0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -299,8 +299,8 @@ func TestAtan(t *testing.T) {
 
 func TestAtan2(t *testing.T) {
 	// atan2(y=1, x=1) = pi/4 ~ 0.785398163
-	y := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
+	y := mpfr.NewFloat().SetFloat64(1.0)
+	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Atan2(y, x, mpfr.RoundToNearest)
 	want := math.Pi / 4
 	if math.Abs(got.GetFloat64(mpfr.RoundToNearest)-want) > 1e-14 {
@@ -309,7 +309,7 @@ func TestAtan2(t *testing.T) {
 }
 
 func TestAtanh(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Atanh(x, mpfr.RoundToNearest)
 	want := 0.0 // atanh(0) = 0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -318,7 +318,7 @@ func TestAtanh(t *testing.T) {
 }
 
 func TestCbrt(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(27.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(27.0)
 	got := mpfr.NewFloat().Cbrt(x, mpfr.RoundToNearest)
 	want := 3.0 // cbrt(27) = 3
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -327,7 +327,7 @@ func TestCbrt(t *testing.T) {
 }
 
 func TestCeil(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(3.1, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(3.1)
 	got := mpfr.NewFloat().Ceil(x)
 	want := 4.0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -336,8 +336,8 @@ func TestCeil(t *testing.T) {
 }
 
 func TestCmpAbs(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(-3.5, mpfr.RoundToNearest)
-	y := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(-3.5)
+	y := mpfr.NewFloat().SetFloat64(2.0)
 	res := mpfr.CmpAbs(x, y)
 	// |-3.5|=3.5, |2.0|=2 => 3.5>2 => res=1
 	if res != 1 {
@@ -346,7 +346,7 @@ func TestCmpAbs(t *testing.T) {
 }
 
 func TestCos(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Cos(x, mpfr.RoundToNearest)
 	want := 1.0 // cos(0)=1
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -355,7 +355,7 @@ func TestCos(t *testing.T) {
 }
 
 func TestCosh(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(0.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(0.0)
 	got := mpfr.NewFloat().Cosh(x, mpfr.RoundToNearest)
 	want := 1.0 // cosh(0)=1
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -366,7 +366,7 @@ func TestCosh(t *testing.T) {
 func TestCot(t *testing.T) {
 	// cot(pi/4) = 1
 	val := math.Pi / 4
-	x := mpfr.NewFloat().SetFloat64(val, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(val)
 	got := mpfr.NewFloat().Cot(x, mpfr.RoundToNearest)
 	want := 1.0
 	if math.Abs(got.GetFloat64(mpfr.RoundToNearest)-want) > 1e-7 {
@@ -376,7 +376,7 @@ func TestCot(t *testing.T) {
 
 func TestCoth(t *testing.T) {
 	// coth(1) ~ 1.313035285
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Coth(x, mpfr.RoundToNearest)
 	want := 1.313035285
 	diff := math.Abs(got.GetFloat64(mpfr.RoundToNearest) - want)
@@ -388,7 +388,7 @@ func TestCoth(t *testing.T) {
 func TestCsc(t *testing.T) {
 	// csc(pi/2)=1
 	val := math.Pi / 2
-	x := mpfr.NewFloat().SetFloat64(val, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(val)
 	got := mpfr.NewFloat().Csc(x, mpfr.RoundToNearest)
 	want := 1.0
 	if math.Abs(got.GetFloat64(mpfr.RoundToNearest)-want) > 1e-7 {
@@ -398,7 +398,7 @@ func TestCsc(t *testing.T) {
 
 func TestCsch(t *testing.T) {
 	// csch(1) ~ 0.850918128
-	x := mpfr.NewFloat().SetFloat64(1.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Csch(x, mpfr.RoundToNearest)
 	want := 0.850918128
 	diff := math.Abs(got.GetFloat64(mpfr.RoundToNearest) - want)
@@ -408,7 +408,7 @@ func TestCsch(t *testing.T) {
 }
 
 func TestExp10(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(2.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(2.0)
 	got := mpfr.NewFloat().Exp10(x, mpfr.RoundToNearest)
 	want := 100.0 // 10^2 = 100
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -417,7 +417,7 @@ func TestExp10(t *testing.T) {
 }
 
 func TestExp2(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(3.0, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(3.0)
 	got := mpfr.NewFloat().Exp2(x, mpfr.RoundToNearest)
 	want := 8.0 // 2^3=8
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -426,7 +426,7 @@ func TestExp2(t *testing.T) {
 }
 
 func TestFloor(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(3.9, mpfr.RoundToNearest)
+	x := mpfr.NewFloat().SetFloat64(3.9)
 	got := mpfr.NewFloat().Floor(x)
 	want := 3.0
 	if !almostEqual(got.GetFloat64(mpfr.RoundToNearest), want) {
@@ -438,8 +438,8 @@ func TestFitsAll(t *testing.T) {
 	var smallVal float64 = 123
 	var bigVal float64 = 1e20
 
-	sf := mpfr.NewFloat().SetFloat64(smallVal, mpfr.RoundToNearest)
-	bf := mpfr.NewFloat().SetFloat64(bigVal, mpfr.RoundToNearest)
+	sf := mpfr.NewFloat().SetFloat64(smallVal)
+	bf := mpfr.NewFloat().SetFloat64(bigVal)
 
 	// smallVal => 123 fits in int, long, short (assuming typical 32/64-bit)
 	if !sf.FitsSint(mpfr.RoundToNearest) {
@@ -469,7 +469,7 @@ func TestFitsAll(t *testing.T) {
 
 func TestSetPrec(t *testing.T) {
 	f := mpfr.NewFloat()
-	f.SetFloat64(3.141592653589793, mpfr.RoundToNearest)
+	f.SetFloat64(3.141592653589793)
 
 	// Set precision to 128 bits
 	f.SetPrec(128)
@@ -522,5 +522,55 @@ func TestFromBigFloat(t *testing.T) {
 	f := mpfr.FromBigFloat(bf)
 	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-1.618033988749894) > 1e-15 {
 		t.Errorf("FromBigFloat(1.618033988749894) got %v; want %v", got, 1.618033988749894)
+	}
+}
+
+func TestSetInt(t *testing.T) {
+	f := mpfr.NewFloat()
+	f.SetInt(-42)
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != -42.0 {
+		t.Errorf("SetInt(-42) got %v; want -42", got)
+	}
+}
+
+func TestSetInt64(t *testing.T) {
+	f := mpfr.NewFloat()
+	f.SetInt64(9223372036854775807)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-9.223372036854776e+18) > 1e-10 {
+		t.Errorf("SetInt64(9223372036854775807) got %v; want ~9.223372036854776e+18", got)
+	}
+}
+
+func TestSetUint64(t *testing.T) {
+	f := mpfr.NewFloat()
+	f.SetUint64(18446744073709551615)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-1.8446744073709552e+19) > 1e-10 {
+		t.Errorf("SetUint64(18446744073709551615) got %v; want ~1.8446744073709552e+19", got)
+	}
+}
+
+func TestSetFloat64(t *testing.T) {
+	f := mpfr.NewFloat()
+	f.SetFloat64(math.Pi)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-math.Pi) > 1e-15 {
+		t.Errorf("SetFloat64(math.Pi) got %v; want %v", got, math.Pi)
+	}
+}
+
+func TestSetBigInt(t *testing.T) {
+	bi := big.NewInt(-1234567890123456789)
+	f := mpfr.NewFloat()
+	f.SetBigInt(bi)
+	if got := f.GetFloat64(mpfr.RoundToNearest); got != -1.2345678901234568e+18 {
+		t.Errorf("SetBigInt(-1234567890123456789) got %v; want -1.2345678901234568e+18", got)
+	}
+}
+
+func TestSetBigFloat(t *testing.T) {
+	bf := big.NewFloat(1.618033988749894)
+	f := mpfr.NewFloat()
+	f.SetBigFloat(bf)
+	if got := f.GetFloat64(mpfr.RoundToNearest); math.Abs(got-1.618033988749894) > 1e-15 {
+		t.Errorf("SetBigFloat(1.618033988749894) got %v; want %v", got, 1.618033988749894)
 	}
 }
