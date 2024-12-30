@@ -67,7 +67,7 @@ func (f *Float) Clear() {
 
 // Rnd is the type for MPFR rounding modes.
 //
-// TODO: MPFR has more modes...
+// TODO: MPFR has more rounding modes, need to test them.
 type Rnd int
 
 const (
@@ -202,6 +202,228 @@ func (f *Float) Cmp(x *Float) int {
 	f.doinit()
 	x.doinit()
 	return int(C.mpfr_cmp(&f.mpfr[0], &x.mpfr[0]))
+}
+
+// Abs sets f = |x| (absolute value of x), using the specified rounding mode.
+func (f *Float) Abs(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_abs(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Acos sets f = arccos(x) with rounding mode rnd.
+func (f *Float) Acos(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_acos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Acosh sets f = arcosh(x) with rounding mode rnd.
+func (f *Float) Acosh(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_acosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Agm sets f = AGM(x, y) (arithmetic-geometric mean), using rnd.
+func (f *Float) Agm(x, y *Float, rnd Rnd) *Float {
+	x.doinit()
+	y.doinit()
+	f.doinit()
+	C.mpfr_agm(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Asin sets f = arcsin(x), using rnd.
+func (f *Float) Asin(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_asin(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Asinh sets f = arsinh(x), using rnd.
+func (f *Float) Asinh(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_asinh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Atan sets f = arctan(x), using rnd.
+func (f *Float) Atan(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_atan(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Atan2 sets f = arctan2(y, x) = angle whose tangent is y/x, using rnd.
+// The signature follows (y, x, rnd) convention of mpfr_atan2.
+func (f *Float) Atan2(y, x *Float, rnd Rnd) *Float {
+	y.doinit()
+	x.doinit()
+	f.doinit()
+	C.mpfr_atan2(&f.mpfr[0], &y.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Atanh sets f = artanh(x), using rnd.
+func (f *Float) Atanh(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_atanh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Cbrt sets f = cbrt(x), using rnd.
+func (f *Float) Cbrt(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_cbrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Ceil sets f = ceil(x), i.e. the smallest integral value >= x.
+func (f *Float) Ceil(x *Float) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_ceil(&f.mpfr[0], &x.mpfr[0]) // rop = mpfr_ceil(op)
+	return f
+}
+
+// CmpAbs compares the absolute values of x and y, returning:
+//
+//	-1 if |x| <  |y|
+//	 0 if |x| == |y|
+//	+1 if |x| >  |y|
+func CmpAbs(x, y *Float) int {
+	x.doinit()
+	y.doinit()
+	return int(C.mpfr_cmpabs(&x.mpfr[0], &y.mpfr[0]))
+}
+
+// Cos sets f = cos(x), using rnd.
+func (f *Float) Cos(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_cos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Cosh sets f = cosh(x), using rnd.
+func (f *Float) Cosh(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_cosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Cot sets f = cot(x) = 1 / tan(x), using rnd.
+func (f *Float) Cot(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_cot(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Coth sets f = coth(x) = 1 / tanh(x), using rnd.
+func (f *Float) Coth(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_coth(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Csc sets f = csc(x) = 1 / sin(x), using rnd.
+func (f *Float) Csc(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_csc(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Csch sets f = csch(x) = 1 / sinh(x), using rnd.
+func (f *Float) Csch(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_csch(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Exp10 sets f = 10^x, using rnd.
+func (f *Float) Exp10(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_exp10(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Exp2 sets f = 2^x, using rnd.
+func (f *Float) Exp2(x *Float, rnd Rnd) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_exp2(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Floor sets f = floor(x), i.e. the largest integral value <= x.
+func (f *Float) Floor(x *Float) *Float {
+	x.doinit()
+	f.doinit()
+	C.mpfr_floor(&f.mpfr[0], &x.mpfr[0])
+	return f
+}
+
+// FitsIntmax returns true if f (rounded by rnd) fits in an intmax_t.
+func (f *Float) FitsIntmax(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_intmax_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsSint returns true if f (rounded by rnd) fits in a signed int.
+func (f *Float) FitsSint(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_sint_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsSlong returns true if f (rounded by rnd) fits in a signed long.
+func (f *Float) FitsSlong(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_slong_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsSshort returns true if f (rounded by rnd) fits in a signed short.
+func (f *Float) FitsSshort(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_sshort_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsUint returns true if f (rounded by rnd) fits in an unsigned int.
+func (f *Float) FitsUint(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_uint_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsUintmax returns true if f (rounded by rnd) fits in a uintmax_t.
+func (f *Float) FitsUintmax(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_uintmax_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsUlong returns true if f (rounded by rnd) fits in an unsigned long.
+func (f *Float) FitsUlong(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_ulong_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
+}
+
+// FitsUshort returns true if f (rounded by rnd) fits in an unsigned short.
+func (f *Float) FitsUshort(rnd Rnd) bool {
+	f.doinit()
+	return C.mpfr_fits_ushort_p(&f.mpfr[0], C.mpfr_rnd_t(rnd)) != 0
 }
 
 // ErrInvalidString is returned when mpfr_set_str fails to parse a string.
