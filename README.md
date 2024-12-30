@@ -1,9 +1,11 @@
 # go-mpfr
 
-A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding. This is not ready for production use yet, but we welcome contributions!
+A Go binding for the [MPFR library](https://www.mpfr.org/) to enable arbitrary-precision floating-point arithmetic with well-defined rounding. This is not ready for production use yet, but we welcome contributions! Please note that this has no association with the MPFR project.
 
 ## Inspiration/The Why
 This was sparked due to a need for high-precision floating-point calculations in Go. The standard library's `math/big` package is great for most applications, but it lacks certain features that mpfr supports out of the box. This project is being used by another in order to perform some high precision calculations, which is why all of the functionality of mpfr has not been implemented yet. Only the necessary functions have been implemented so far.
+
+Inspiration for this project comes from [GMP](https://github.com/ncw/gmp)! Huge shoutout to all the contributors there and for [mpfr](https://machinecognitis.github.io/Math.Mpfr.Native/html/6146e71f-a352-2e48-f234-6d79ad0f8c3c.htm) for providing such a great library!!
 
 ## Features
 
@@ -58,6 +60,4 @@ go run main.go
 We welcome contributions! See our [CONTRIBUTING](https://github.com/mexicantexan/go-mpfr/blob/master/CONTRIBUTING.md) guide (TODO) for how to get started.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE] (https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
-
-Inspiration for this project comes from [GMP](https://github.com/ncw/gmp)!
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
