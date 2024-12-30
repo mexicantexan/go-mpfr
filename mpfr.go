@@ -17,6 +17,7 @@ package mpfr
 */
 import "C"
 import (
+	"fmt"
 	"math"
 	"math/big"
 	"runtime"
@@ -164,6 +165,27 @@ func (f *Float) Div(x, y *Float, rnd Rnd) *Float {
 	y.doinit()
 	f.doinit()
 	C.mpfr_div(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(rnd))
+	return f
+}
+
+// Quo sets f to the quotient of x / y with the specified rounding mode and returns f.
+// If y == 0, it panics with a division-by-zero error.
+func (f *Float) Quo(x, y *Float, rnd Rnd) *Float {
+	x.doinit()
+	y.doinit()
+	f.doinit()
+
+	// Check for division by zero
+	if C.mpfr_zero_p(&y.mpfr[0]) != 0 { // mpfr_zero_p returns nonzero if y is zero
+		panic("Quo: division by zero")
+	}
+
+	result := C.mpfr_div(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(rnd))
+	if result != 0 {
+		// Log inexact results for debugging, but don't panic
+		fmt.Printf("Quo: inexact result with code = %d\n", result)
+	}
+
 	return f
 }
 

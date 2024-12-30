@@ -148,6 +148,51 @@ func TestDiv(t *testing.T) {
 	}
 }
 
+func TestQuo(t *testing.T) {
+	tests := []struct {
+		x, y        float64
+		rnd         mpfr.Rnd
+		expected    string
+		shouldPanic bool
+	}{
+		{10, 2, mpfr.RoundToNearest, "5", false},
+		{10, 3, mpfr.RoundToNearest, "3.333333333333333", false},
+		{10, 3, mpfr.RoundToward0, "3.333333333333333", false},
+		{10, 0, mpfr.RoundToNearest, "", true},
+		{-10, 0, mpfr.RoundToNearest, "", true},
+	}
+
+	for _, tt := range tests {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tt.shouldPanic {
+						t.Errorf("Quo(%v, %v) unexpectedly panicked: %v", tt.x, tt.y, r)
+					}
+				} else if tt.shouldPanic {
+					t.Errorf("Quo(%v, %v) did not panic as expected", tt.x, tt.y)
+				}
+			}()
+
+			x := mpfr.FromFloat64(tt.x)
+			y := mpfr.FromFloat64(tt.y)
+			result := mpfr.NewFloat()
+
+			if !tt.shouldPanic {
+				result.Quo(x, y, tt.rnd)
+				got := result.Float64()
+				expected, _ := strconv.ParseFloat(tt.expected, 64)
+				closeEnough := almostEqual(got, expected)
+				if !closeEnough {
+					t.Errorf("Quo(%v, %v) got %v; want %v", tt.x, tt.y, got, tt.expected)
+				}
+			} else {
+				_ = result.Quo(x, y, tt.rnd) // Expect a panic
+			}
+		}()
+	}
+}
+
 func TestCmp(t *testing.T) {
 	a := mpfr.NewFloat().SetFloat64(2.0)
 	b := mpfr.NewFloat().SetFloat64(2.0)
