@@ -373,12 +373,14 @@ func TestRoots(t *testing.T) {
 		{-27, mpfr.RoundToNearest, "-3", "Cbrt"},
 		{9, mpfr.RoundToNearest, "3", "Sqrt"},
 		{16, mpfr.RoundToNearest, "4", "Sqrt"},
+		// Test a prime number
+		{17, mpfr.RoundToNearest, "4.12310562561766", "Sqrt"},
 	}
 
 	for _, tt := range tests {
 		x := mpfr.FromFloat64(tt.x)
 		result := mpfr.NewFloat()
-
+		println(fmt.Sprintf("%v", tt))
 		switch tt.method {
 		case "Cbrt":
 			result.Cbrt(x, tt.rnd)

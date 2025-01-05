@@ -21,7 +21,6 @@ import (
 	"math"
 	"math/big"
 	"runtime"
-	"strconv"
 	"strings"
 	"unsafe"
 )
@@ -31,8 +30,9 @@ import (
 // (similar to how the GMP code works).
 // Float represents a multiple-precision floating-point number.
 type Float struct {
-	mpfr C.mpfr_t // Use C.mpfr_t directly (array of 1 struct)
-	init bool
+	mpfr      C.mpfr_t // Use C.mpfr_t directly (array of 1 struct)
+	init      bool
+	Precision uint
 }
 
 // finalizer is called by the garbage collector when there are no
@@ -53,7 +53,20 @@ func (f *Float) doinit() {
 	f.init = true
 
 	// Initialize the mpfr_t struct
-	C.mpfr_init(&f.mpfr[0]) // Pass a pointer to the first element
+	C.mpfr_init(&f.mpfr[0])
+
+	// Set the finalizer to clean up the memory when the object is garbage-collected
+	runtime.SetFinalizer(f, finalizer)
+}
+
+func (f *Float) doinitwithprec(prec uint) {
+	if f.init {
+		return
+	}
+	f.init = true
+
+	// Initialize the mpfr_t struct
+	C.mpfr_init2(&f.mpfr[0], C.mpfr_prec_t(prec))
 
 	// Set the finalizer to clean up the memory when the object is garbage-collected
 	runtime.SetFinalizer(f, finalizer)
@@ -90,6 +103,14 @@ func NewFloat() *Float {
 	return f
 }
 
+func NewFloatWithPrec(prec uint) *Float {
+	f := &Float{}
+	f.doinit()
+	f.SetFloat64(0.0)
+	f.SetPrec(prec)
+	return f
+}
+
 // GetFloat64 returns the float64 approximation of f, using the specified rounding mode.
 func (f *Float) GetFloat64(rnd Rnd) float64 {
 	f.doinit()
@@ -121,7 +142,18 @@ func (f *Float) String() string {
 	defer C.mpfr_free_str(cstr)
 
 	mantissa := C.GoString(cstr)
-	return mantissa + "e" + strconv.FormatInt(int64(exp), 10)
+	intExp := int(exp)
+	if intExp >= 0 {
+		if intExp > len(mantissa) {
+			//	pad with 0's
+			mantissa += strings.Repeat("0", intExp-len(mantissa))
+			return mantissa + ".0"
+		}
+		return mantissa[:intExp] + "." + mantissa[intExp:]
+	}
+	// pad with 0's
+	mantissa = strings.Repeat("0", int(-intExp)) + mantissa
+	return "0." + mantissa
 }
 
 // Copy sets f to x, copying the entire mpfr_t.
@@ -310,8 +342,10 @@ func (f *Float) Sqrt(x *Float, rnd Rnd) *Float {
 	x.doinit()
 	f.doinit()
 
-	if C.mpfr_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd)) != 0 {
-		panic("Sqrt: failed to compute square root")
+	// Compute the square root
+	res := C.mpfr_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+	if res != 0 && C.mpfr_nan_p(&f.mpfr[0]) != 0 {
+		panic(fmt.Sprintf("Sqrt: failed to compute square root for %s; MPFR result code: %v", x.String(), res))
 	}
 
 	return f
@@ -328,7 +362,8 @@ func (f *Float) RootUI(x *Float, k uint, rnd Rnd) *Float {
 	}
 
 	// Perform the root operation using mpfr_rootn_ui
-	if C.mpfr_rootn_ui(&f.mpfr[0], &x.mpfr[0], C.ulong(k), C.mpfr_rnd_t(rnd)) != 0 {
+	res := C.mpfr_rootn_ui(&f.mpfr[0], &x.mpfr[0], C.ulong(k), C.mpfr_rnd_t(rnd))
+	if res != 0 && C.mpfr_nan_p(&f.mpfr[0]) != 0 {
 		panic(fmt.Sprintf("Root: failed to compute the %d-th root", k))
 	}
 
