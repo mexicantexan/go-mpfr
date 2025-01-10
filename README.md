@@ -45,10 +45,21 @@ import (
 )
 
 func main() {
+        // add two separate floats
 	x := mpfr.NewFloat().SetFloat64(1.5)
 	y := mpfr.NewFloat().SetFloat64(2.25)
-	sum := mpfr.NewFloat().Add(x, y, mpfr.RoundToNearest)
+	sum := mpfr.NewFloat().Add(x, y)
 	fmt.Printf("1.5 + 2.25 = %v\n", sum.Float64())
+
+        // perform "inplace" operations
+        x.Add(y)
+        fmt.Printf("1.5 + 2.25 = %v\n", x.Float64())
+
+        // set precision
+        x.SetPrec(256)
+
+        // set RoundingMode
+        s.SetRoundingMode(mpfr.RoundToward0)
 }
 ```
 Run it:
