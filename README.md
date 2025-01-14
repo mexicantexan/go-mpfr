@@ -34,7 +34,7 @@ go get github.com/mexicantexan/go-mpfr
 
 ## Usage
 
-A quick example:
+A quick example showing different setters, getters, and function calling:
 
 ```go
 package main
@@ -42,12 +42,13 @@ package main
 import (
 	"fmt"
 	mpfr "github.com/mexicantexan/go-mpfr"
+        "math/big"
 )
 
 func main() {
 	// add two separate floats into a new float
 	x := mpfr.NewFloat().SetFloat64(1.5)
-	y := mpfr.NewFloat().SetFloat64(2.25)
+	y := mpfr.FromFloat64(2.25) // there are many ways to create a float
 	sum := mpfr.Add(x, y, mpfr.RoundToNearest)
 	fmt.Printf("1.5 + 2.25 = %v\n", sum.Float64())
 
@@ -56,12 +57,15 @@ func main() {
 	fmt.Printf("1.5 + 2.25 = %v\n", x.Float64())
 
 	// add multiple floats (summing 1.5, 2.25, 3.75, and 1.0)
-	x = mpfr.FromFloat64(1.5)
-	y = mpfr.FromFloat64(2.25)
-	z := mpfr.FromFloat64(3.75)
-	w := mpfr.FromFloat64(1.0)
-        x.Add(y, z, w)
-	fmt.Printf("1.5 + 2.25 + 3.75 + 1.0 = %v\n", x.Float64())
+	t := mpfr.FromInt(1)
+	u := mpfr.FromInt64(2)
+	v := mpfr.FromUint64(3)
+	x = mpfr.FromFloat64(4.01)
+	y = mpfr.FromBigInt(big.NewInt(5))
+	z := mpfr.NewFloat().SetInt(6)
+	t.Add(u, v, x, y, z)
+	fmt.Printf("1 + 2 + 3 + 4.01 + 5 + 6 = %v\n", t.Float64())
+        fmt.Printf("1 + 2 + 3 + 4.01 + 5 + 6 = %v\n", t.Int64())
 	
 	// set precision 
 	x.SetPrec(256)
@@ -70,7 +74,7 @@ func main() {
 	x.SetRoundingMode(mpfr.RoundToward0)
 }
 ```
-Run it:
+Run the example above:
 ```bash
 go run main.go
 ```
