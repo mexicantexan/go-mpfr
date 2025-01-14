@@ -153,65 +153,212 @@ func (f *Float) Copy(x *Float) *Float {
 	return f
 }
 
-// Add sets f to x + y, with the given rounding mode, and returns f.
-func (f *Float) Add(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
+// Add performs sequential addition on the receiver `f` and stores the result:
+//
+//   - If called with one argument (`x`), the function computes f + x, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with multiple arguments (`x1, x2, ..., xn`), the function sequentially adds each argument
+//     to `f`, i.e., f = f + x1 + x2 + ... + xn. This modifies `f` in place and returns it.
+//
+// Example Usage:
+//
+//	// Add x to f (in-place addition):
+//	f := NewFloat().SetFloat64(10.0)
+//	x := NewFloat().SetFloat64(3.0)
+//	f.Add(x) // f is now 10.0 + 3.0 = 13.0
+//
+//	// Sequentially add multiple values to f:
+//	f.SetFloat64(5.0)
+//	x1 := NewFloat().SetFloat64(2.0)
+//	x2 := NewFloat().SetFloat64(3.0)
+//	x3 := NewFloat().SetFloat64(4.0)
+//	f.Add(x1, x2, x3) // f is now 5.0 + 2.0 + 3.0 + 4.0 = 14.0
+//
+// Notes:
+// - At least one argument must be provided; otherwise, the function panics.
+// - All arguments must be properly initialized before the call.
+// - The computation uses the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Add(args ...*Float) *Float {
+	if len(args) == 0 {
+		// No arguments provided.
+		panic("Add requires at least 1 argument")
+	}
+
 	f.doinit()
-	C.mpfr_add(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	// Sequentially add the arguments.
+	for _, addend := range args {
+		addend.doinit()
+		C.mpfr_add(&f.mpfr[0], &f.mpfr[0], &addend.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
 // Add sets f to x + y, with the given rounding mode, and returns f.
 func Add(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Add(x, y)
+	x.SetRoundMode(rnd)
+	return x.Add(y)
 }
 
-// Sub sets f to x - y, with the given rounding mode, and returns f.
-func (f *Float) Sub(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
+// Sub performs sequential subtraction on the receiver `f` and stores the result:
+//
+//   - If called with one argument (`x`), the function computes f - x, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with multiple arguments (`x1, x2, ..., xn`), the function sequentially subtracts each argument
+//     from `f`, i.e., f = f - x1 - x2 - ... - xn. This modifies `f` in place and returns it.
+//
+// Example Usage:
+//
+//	// Subtract x from f (in-place subtraction):
+//	f := NewFloat().SetFloat64(10.0)
+//	x := NewFloat().SetFloat64(3.0)
+//	f.Sub(x) // f is now 10.0 - 3.0 = 7.0
+//
+//	// Sequentially subtract multiple values from f:
+//	f.SetFloat64(20.0)
+//	x1 := NewFloat().SetFloat64(5.0)
+//	x2 := NewFloat().SetFloat64(3.0)
+//	f.Sub(x1, x2) // f is now 20.0 - 5.0 - 3.0 = 12.0
+//
+// Notes:
+// - At least one argument must be provided; otherwise, the function panics.
+// - All arguments must be properly initialized before the call.
+// - The computation uses the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Sub(args ...*Float) *Float {
+	if len(args) == 0 {
+		// No arguments provided.
+		panic("Sub requires at least 1 argument")
+	}
 	f.doinit()
-	C.mpfr_sub(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	// Sequentially subtract the arguments.
+	for _, subtrahend := range args {
+		subtrahend.doinit()
+		C.mpfr_sub(&f.mpfr[0], &f.mpfr[0], &subtrahend.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
 func Sub(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Sub(x, y)
+	x.SetRoundMode(rnd)
+	return x.Sub(y)
 }
 
-// Mul sets f to x * y, with the given rounding mode, and returns f.
-func (f *Float) Mul(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
+// Mul performs sequential multiplication on the receiver `f` and stores the result:
+//
+//   - If called with one argument (`x`), the function computes f * x, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with multiple arguments (`x1, x2, ..., xn`), the function sequentially multiplies `f`
+//     by each argument in order, i.e., f = f * x1 * x2 * ... * xn. This modifies `f` in place and returns it.
+//
+// Example Usage:
+//
+//	// Multiply f by x (in-place multiplication):
+//	f := NewFloat().SetFloat64(2.0)
+//	x := NewFloat().SetFloat64(3.0)
+//	f.Mul(x) // f is now 2.0 * 3.0 = 6.0
+//
+//	// Sequentially multiply f by multiple values:
+//	f.SetFloat64(1.0)
+//	x1 := NewFloat().SetFloat64(2.0)
+//	x2 := NewFloat().SetFloat64(3.0)
+//	x3 := NewFloat().SetFloat64(4.0)
+//	f.Mul(x1, x2, x3) // f is now 1.0 * 2.0 * 3.0 * 4.0 = 24.0
+//
+// Notes:
+// - At least one argument must be provided; otherwise, the function panics.
+// - All arguments must be properly initialized before the call.
+// - The computation uses the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Mul(args ...*Float) *Float {
+	if len(args) == 0 {
+		// No arguments provided.
+		panic("Mul requires at least 1 argument")
+	}
+
+	// Initialize the receiver.
 	f.doinit()
-	C.mpfr_mul(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	// Sequentially multiply by the arguments.
+	for _, multiplier := range args {
+		multiplier.doinit()
+		C.mpfr_mul(&f.mpfr[0], &f.mpfr[0], &multiplier.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
 func Mul(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Mul(x, y)
+	x.SetRoundMode(rnd)
+	return x.Mul(y)
 }
 
-// Div sets f to x / y, with the given rounding mode, and returns f.
-func (f *Float) Div(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
+// Div performs sequential division on the receiver `f` and stores the result:
+//
+//   - If called with one argument (`x`), the function computes f / x, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with multiple arguments (`x1, x2, ..., xn`), the function sequentially divides `f`
+//     by each argument in order, i.e., f = f / x1 / x2 / ... / xn. This modifies `f` in place and returns it.
+//
+// Example Usage:
+//
+//	// Divide f by x (in-place division):
+//	f := NewFloat().SetFloat64(10.0)
+//	x := NewFloat().SetFloat64(2.0)
+//	f.Div(x) // f is now 10.0 / 2.0 = 5.0
+//
+//	// Sequentially divide f by multiple values:
+//	f.SetFloat64(100.0)
+//	x1 := NewFloat().SetFloat64(2.0)
+//	x2 := NewFloat().SetFloat64(5.0)
+//	f.Div(x1, x2) // f is now 100.0 / 2.0 / 5.0 = 10.0
+//
+// Notes:
+// - At least one argument must be provided; otherwise, the function panics.
+// - All arguments must be properly initialized before the call.
+// - Division by zero will result in behavior as defined by the MPFR library (e.g., Inf or NaN).
+// - The computation uses the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Div(args ...*Float) *Float {
+	if len(args) == 0 {
+		// No arguments provided.
+		panic("Div requires at least 1 argument")
+	}
+
 	f.doinit()
-	C.mpfr_div(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	// Sequentially divide by the arguments.
+	for _, divisor := range args {
+		divisor.doinit()
+		C.mpfr_div(&f.mpfr[0], &f.mpfr[0], &divisor.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
 func Div(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Div(x, y)
+	x.SetRoundMode(rnd)
+	return x.Div(y)
 }
 
 // Quo sets f to the quotient of x / y with the specified rounding mode and returns f.
@@ -238,12 +385,64 @@ func Quo(x, y *Float, rnd Rnd) *Float {
 	return f.Quo(x, y)
 }
 
-// Pow sets f to x^y (x raised to the power y), with the given rounding mode, and returns f.
-func (f *Float) Pow(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
-	f.doinit()
-	C.mpfr_pow(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+// Pow computes the power function and stores the result in the receiver `f`:
+//
+//   - If called with one argument (`y`), the function computes f^y (where `f` is the current value
+//     of the receiver) and stores the result in `f`.
+//
+//   - If called with two arguments (`x`, `y`), the function computes x^y and stores the result in the receiver `f`
+//     using the receiver's RoundingMode.
+//
+//   - If called with three arguments (`x`, `y`, `rnd`), the function computes x^y and stores the result in the receiver `f`
+//     using the specified rounding mode `rnd`.
+//
+// Example Usage:
+//
+//	// Compute f^y (receiver raised to the power of y):
+//	f := NewFloat().SetFloat64(2.0)
+//	y := NewFloat().SetFloat64(3.0)
+//	f.Pow(y) // f is now 2.0^3.0 = 8.0
+//
+//	// Compute x^y using the receiver's rounding mode:
+//	x := NewFloat().SetFloat64(2.0)
+//	y.SetFloat64(3.0)
+//	f.Pow(x, y) // f is now 2.0^3.0 = 8.0
+//
+// Notes:
+// - If only one argument is provided, `y` must be initialized before the call.
+// - If two or three arguments are provided, both `x` and `y` must be initialized before the call.
+// - If `rnd` is not provided, the rounding mode of the receiver `f` is used.
+// - The function handles special cases like x = 0 or y = 0 according to the MPFR library rules.
+// - Behavior for non-integer exponents and negative bases depends on MPFR.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Pow(args ...interface{}) *Float {
+	if len(args) == 1 {
+		// Compute f^y (receiver raised to the power of y).
+		y, yOk := args[0].(*Float)
+		if !yOk {
+			panic("Pow expects a *Float as the single argument")
+		}
+		y.doinit()
+		f.doinit()
+		C.mpfr_pow(&f.mpfr[0], &f.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else if len(args) > 1 {
+		// Compute x^y using the receiver's rounding mode.
+		x, xOk := args[0].(*Float)
+		y, yOk := args[1].(*Float)
+		if !xOk || !yOk {
+			panic("Pow expects two *Float arguments (x, y)")
+		}
+		x.doinit()
+		y.doinit()
+		f.doinit()
+		C.mpfr_pow(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		panic("Pow expects at least one argument")
+	}
+
 	return f
 }
 
@@ -254,11 +453,49 @@ func Pow(x, y *Float, rnd Rnd) *Float {
 	return f.Pow(x, y)
 }
 
-// Exp sets f to e^x (the exponential of x), with the given rounding mode, and returns f.
-func (f *Float) Exp(x *Float) *Float {
-	x.doinit()
+// Exp computes the exponential function e^x and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes e^f, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes e^x and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the exponential function of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Exp(x) // f is now e^1.0 ≈ 2.718
+//
+//	// Compute the exponential function of the receiver's value in place:
+//	f.SetFloat64(2.0)
+//	f.Exp() // f is now e^2.0 ≈ 7.389
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The exponential function e^x is defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Exp(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_exp(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute e^f in place.
+		C.mpfr_exp(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute e^x and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_exp(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -268,12 +505,49 @@ func Exp(x *Float, rnd Rnd) *Float {
 	return f.Exp(x)
 }
 
-// Log sets f to the natural logarithm of x (ln(x)), with the given rounding mode, and returns f.
-// If x <= 0, MPFR will return NaN or -Inf depending on the input value.
-func (f *Float) Log(x *Float) *Float {
-	x.doinit()
+// Log computes the natural logarithm (ln) of a value and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes ln(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes ln(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the natural logarithm of a specific value:
+//	x := NewFloat().SetFloat64(2.718)
+//	f := NewFloat()
+//	f.Log(x) // f is now ln(2.718) ≈ 1.0
+//
+//	// Compute the natural logarithm of the receiver's value in place:
+//	f.SetFloat64(10.0)
+//	f.Log() // f is now ln(10.0)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - For inputs `x <= 0`, the result will be NaN (if x < 0) or -Inf (if x == 0), depending on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Log(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_log(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute ln(f) in place.
+		C.mpfr_log(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute ln(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_log(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -297,22 +571,103 @@ func Cmp(x, y *Float) int {
 	return int(C.mpfr_cmp(&x.mpfr[0], &y.mpfr[0]))
 }
 
-// Abs sets f = |x| (absolute value of x), using the specified rounding mode.
-func (f *Float) Abs() *Float {
+// Abs computes the absolute value of a value, |x|, and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes |f|, where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes |x| and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the absolute value of a specific value:
+//	x := NewFloat().SetFloat64(-3.5)
+//	f := NewFloat()
+//	f.Abs(x) // f is now 3.5
+//
+//	// Compute the absolute value of the receiver's value in place:
+//	f.SetFloat64(-2.5)
+//	f.Abs() // f is now 2.5
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The absolute value function |x| is defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Abs(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_abs(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute |f| in place.
+		C.mpfr_abs(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute |x| and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_abs(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
-func Abs(x *Float) *Float {
-	return x.Abs()
+func Abs(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Abs(x)
+
 }
 
-// Acos sets f = arccos(x) with rounding mode rnd.
-func (f *Float) Acos(x *Float) *Float {
-	x.doinit()
+// Acos computes the arccosine of a value, arccos(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes arccos(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes arccos(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the arccosine of a specific value:
+//	x := NewFloat().SetFloat64(0.5)
+//	f := NewFloat()
+//	f.Acos(x) // f is now arccos(0.5)
+//
+//	// Compute the arccosine of the receiver's value in place:
+//	f.SetFloat64(0.3)
+//	f.Acos() // f is now arccos(0.3)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called with no arguments, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The arccosine function is defined only for values in the range [-1, 1]; behavior outside this range
+//     depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Acos(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_acos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute arccos(f) in place.
+		C.mpfr_acos(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute arccos(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_acos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -323,11 +678,50 @@ func Acos(x *Float, rnd Rnd) *Float {
 	return f.Acos(x)
 }
 
-// Acosh sets f = arcosh(x) with rounding mode rnd.
-func (f *Float) Acosh(x *Float) *Float {
-	x.doinit()
+// Acosh computes the inverse hyperbolic cosine of a value, arcosh(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes arcosh(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes arcosh(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the inverse hyperbolic cosine of a specific value:
+//	x := NewFloat().SetFloat64(1.5)
+//	f := NewFloat()
+//	f.Acosh(x) // f is now arcosh(1.5)
+//
+//	// Compute the inverse hyperbolic cosine of the receiver's value in place:
+//	f.SetFloat64(2.0)
+//	f.Acosh() // f is now arcosh(2.0)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called with no arguments, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The inverse hyperbolic cosine function, arcosh(x), is defined only for x >= 1; behavior
+//     for x < 1 depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Acosh(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_acosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute arcosh(f) in place.
+		C.mpfr_acosh(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute arcosh(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_acosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -354,11 +748,49 @@ func Agm(x, y *Float, rnd Rnd) *Float {
 	return f.Agm(x, y)
 }
 
-// Asin sets f = arcsin(x), using rnd.
-func (f *Float) Asin(x *Float) *Float {
-	x.doinit()
+// Asin computes the arcsine of a value, arcsin(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes arcsin(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes arcsin(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the arcsine of a specific value:
+//	x := NewFloat().SetFloat64(0.5)
+//	f := NewFloat()
+//	f.Asin(x) // f is now arcsin(0.5)
+//
+//	// Compute the arcsine of the receiver's value in place:
+//	f.SetFloat64(0.3)
+//	f.Asin() // f is now arcsin(0.3)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called with no arguments, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The arcsine function is defined only for values in the range [-1, 1]; behavior outside this range
+//     depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Asin(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_asin(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	if len(args) == 0 {
+		// Compute arcsin(f) in place.
+		C.mpfr_asin(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute arcsin(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_asin(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -369,11 +801,49 @@ func Asin(x *Float, rnd Rnd) *Float {
 	return f.Asin(x)
 }
 
-// Asinh sets f = arsinh(x), using rnd.
-func (f *Float) Asinh(x *Float) *Float {
-	x.doinit()
+// Asinh computes the inverse hyperbolic sine of a value, arsinh(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes arsinh(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes arsinh(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the inverse hyperbolic sine of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Asinh(x) // f is now arsinh(1.0)
+//
+//	// Compute the inverse hyperbolic sine of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Asinh() // f is now arsinh(0.5)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The inverse hyperbolic sine function arsinh(x) is well-defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Asinh(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_asinh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute arsinh(f) in place.
+		C.mpfr_asinh(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute arsinh(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_asinh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -384,11 +854,49 @@ func Asinh(x *Float, rnd Rnd) *Float {
 	return f.Asinh(x)
 }
 
-// Atan sets f = arctan(x), using rnd.
-func (f *Float) Atan(x *Float) *Float {
-	x.doinit()
+// Atan computes the arctangent of a value, arctan(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes arctan(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes arctan(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the arctangent of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Atan(x) // f is now arctan(1.0) = π/4
+//
+//	// Compute the arctangent of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Atan() // f is now arctan(0.5)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The arctangent function is well-defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Atan(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_atan(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute arctan(f) in place.
+		C.mpfr_atan(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute arctan(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_atan(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -415,11 +923,49 @@ func Atan2(y, x *Float, rnd Rnd) *Float {
 	return f.Atan2(y, x)
 }
 
-// Atanh sets f = artanh(x), using rnd.
-func (f *Float) Atanh(x *Float) *Float {
-	x.doinit()
+// Atanh computes the inverse hyperbolic tangent of a value, artanh(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes artanh(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes artanh(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the inverse hyperbolic tangent of a specific value:
+//	x := NewFloat().SetFloat64(0.5)
+//	f := NewFloat()
+//	f.Atanh(x) // f is now artanh(0.5)
+//
+//	// Compute the inverse hyperbolic tangent of the receiver's value in place:
+//	f.SetFloat64(0.3)
+//	f.Atanh() // f is now artanh(0.3)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with no arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The function is undefined for |x| ≥ 1 (i.e., x <= -1 or x >= 1); behavior in such cases depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Atanh(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_atanh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute artanh(f) in place.
+		C.mpfr_atanh(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute artanh(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_atanh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -451,14 +997,13 @@ func Atanh(x *Float, rnd Rnd) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Cbrt(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_cbrt(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_cbrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_cbrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
 }
 
@@ -487,10 +1032,16 @@ func Cbrt(x *Float, rnd Rnd) *Float {
 // Returns:
 //
 //	A pointer to the modified receiver `f`.
-func (f *Float) Sqrt(x *Float) *Float {
-	x.doinit()
+func (f *Float) Sqrt(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	if len(args) == 0 {
+		C.mpfr_sqrt(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		x := args[0]
+		x.doinit()
+		C.mpfr_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
@@ -561,6 +1112,13 @@ func (f *Float) Ceil(args ...*Float) *Float {
 	return f
 }
 
+// Ceil returns ceil(x), using rnd.
+func Ceil(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Ceil(x)
+}
+
 // CmpAbs compares the absolute values of x and y, returning:
 //
 //	-1 if |x| <  |y|
@@ -601,15 +1159,21 @@ func CmpAbs(x, y *Float) int {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Cos(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_cos(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_cos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_cos(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Cos returns cos(x), using rnd.
+func Cos(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Cos(x)
 }
 
 // Cosh computes the hyperbolic cosine of a Float and stores the result in the receiver `f`.
@@ -644,15 +1208,22 @@ func (f *Float) Cos(args ...*Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Cosh(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+
+	if len(args) == 0 {
+		C.mpfr_cosh(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_cosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_cosh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Cosh returns cosh(x), using rnd.
+func Cosh(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Cosh(x)
 }
 
 // Cot computes the cotangent of a Float and stores the result in the receiver `f`.
@@ -689,15 +1260,22 @@ func (f *Float) Cosh(args ...*Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Cot(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+
+	if len(args) == 0 {
+		C.mpfr_cot(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_cot(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_cot(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Cot returns cot(x), using rnd.
+func Cot(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Cot(x)
 }
 
 // Coth computes the hyperbolic cotangent of a Float and stores the result in the receiver `f`.
@@ -734,15 +1312,21 @@ func (f *Float) Cot(args ...*Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Coth(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_coth(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_coth(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_coth(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Coth returns coth(x), using rnd.
+func Coth(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Coth(x)
 }
 
 // Csc computes the cosecant of a Float and stores the result in the receiver `f`.
@@ -779,15 +1363,21 @@ func (f *Float) Coth(args ...*Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Csc(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_csc(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_csc(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_csc(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Csc returns csc(x), using rnd.
+func Csc(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Csc(x)
 }
 
 // Csch computes the hyperbolic cosecant of a Float and stores the result in the receiver `f`.
@@ -824,15 +1414,21 @@ func (f *Float) Csc(args ...*Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Csch(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_csch(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_csch(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_csch(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Csch returns csch(x), using rnd.
+func Csch(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Csch(x)
 }
 
 // Exp10 sets f = 10^x
@@ -843,12 +1439,26 @@ func (f *Float) Exp10(x *Float) *Float {
 	return f
 }
 
+// Exp10 returns 10^x, using rnd
+func Exp10(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Exp10(x)
+}
+
 // Exp2 sets f = 2^x
 func (f *Float) Exp2(x *Float) *Float {
 	x.doinit()
 	f.doinit()
 	C.mpfr_exp2(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Exp2 returns 2^x, using rnd
+func Exp2(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Exp2(x)
 }
 
 // Floor computes the floor of a Float and stores the result in the receiver `f`.
@@ -881,15 +1491,21 @@ func (f *Float) Exp2(x *Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Floor(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_floor(&f.mpfr[0], &f.mpfr[0])
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_floor(&f.mpfr[0], &x.mpfr[0])
 	}
-	C.mpfr_floor(&f.mpfr[0], &x.mpfr[0])
 	return f
+}
+
+// Floor returns floor(x), using rnd
+func Floor(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Floor(x)
 }
 
 // Fma sets f = (x * y) + z and returns f.
@@ -987,14 +1603,13 @@ func (f *Float) Fms(x, y, z *Float) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Frac(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_frac(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_frac(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_frac(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
 }
 
@@ -1039,14 +1654,13 @@ func FreeCache() {
 //	A pointer to the modified receiver `f`.
 func (f *Float) Gamma(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_gamma(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_gamma(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_gamma(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
 }
 
@@ -1104,14 +1718,14 @@ func Hypot(x, y *Float, rnd Rnd) *Float {
 	return f.Hypot(x, y)
 }
 
-// Inf returns true if f is infinite, false otherwise.
-func (f *Float) Inf() bool {
+// IsInf returns true if f is infinite, false otherwise.
+func (f *Float) IsInf() bool {
 	f.doinit()
 	return C.mpfr_inf_p(&f.mpfr[0]) != 0
 }
 
-// Inf returns true if x is infinite, false otherwise.
-func Inf(x *Float) bool {
+// IsInf returns true if x is infinite, false otherwise.
+func IsInf(x *Float) bool {
 	x.doinit()
 	return C.mpfr_inf_p(&x.mpfr[0]) != 0
 }
@@ -1154,14 +1768,14 @@ func Inf(x *Float) bool {
 //	A pointer to the modified receiver `f`.
 func (f *Float) J0(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 && args[0] != nil {
+		C.mpfr_j0(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_j0(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_j0(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
 	return f
 }
 
@@ -1210,14 +1824,14 @@ func J0(x *Float, rnd Rnd) *Float {
 //	A pointer to the modified receiver `f`.
 func (f *Float) J1(args ...*Float) *Float {
 	f.doinit()
-	var x *Float
-	if len(args) > 0 && args[0] != nil {
-		x = args[0]
-		x.doinit()
+	if len(args) == 0 {
+		C.mpfr_j1(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	} else {
-		x = f
+		x := args[0]
+		x.doinit()
+		C.mpfr_j1(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	}
-	C.mpfr_j1(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
 	return f
 }
 
@@ -1518,18 +2132,92 @@ func MinPrec(x, y *Float) uint {
 	return precY
 }
 
-// Modf splits x into integer and fractional parts, with rounding mode rnd.
-// It returns two new *Float values: (intPart, fracPart).
+// Modf splits a value into its integer and fractional parts, with rounding mode specified.
+// The result is:
 //
 //	x = intPart + fracPart
 //
-// The signs of the parts follow MPFR's definition.
-func Modf(x *Float, rnd Rnd) (intPart, fracPart *Float) {
-	x.doinit()
+// Both the integer part and fractional part are returned as new `*Float` values. The signs of the
+// parts follow MPFR's definition.
+//
+//   - If called with no arguments, the function splits the current value of the receiver `f` into
+//     integer and fractional parts using the rounding mode of `f`.
+//
+//   - If called with one argument `x`, the function splits `x` into integer and fractional parts
+//     using the rounding mode of `f`.
+//
+//   - If called with two arguments (`x` and `rnd`), the function splits `x` into integer and fractional
+//     parts using the specified rounding mode `rnd`.
+//
+// Example Usage:
+//
+//	// Split a specific value into integer and fractional parts using the receiver's rounding mode:
+//	x := NewFloat().SetFloat64(3.7)
+//	intPart, fracPart := f.Modf(x)
+//	// intPart is 3.0, fracPart is 0.7
+//
+//	// Split a specific value using a specified rounding mode:
+//	x := NewFloat().SetFloat64(-2.8)
+//	intPart, fracPart := f.Modf(x, RndDown)
+//	// intPart is -3.0, fracPart is 0.2
+//
+//	// Split the receiver's value into integer and fractional parts:
+//	f.SetFloat64(2.5)
+//	intPart, fracPart := f.Modf()
+//	// intPart is 2.0, fracPart is 0.5
+//
+// Notes:
+//   - If `rnd` is not provided, the rounding mode of the receiver `f` is used.
+//   - The function does not raise exceptions for special cases like infinities or NaNs; behavior
+//     depends on the MPFR library.
+//
+// Returns:
+//
+//	Two pointers to `*Float` values: `(intPart, fracPart)`:
+//	    - `intPart`: The integer part of the value.
+//	    - `fracPart`: The fractional part of the value.
+func (f *Float) Modf(args ...interface{}) (intPart, fracPart *Float) {
 	intPart = NewFloat()
 	fracPart = NewFloat()
-	C.mpfr_modf(&intPart.mpfr[0], &fracPart.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+
+	if len(args) == 0 {
+		// Called with no arguments: use the current value of `f` and its rounding mode.
+		f.doinit()
+		C.mpfr_modf(&intPart.mpfr[0], &fracPart.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else if len(args) == 1 {
+		// Called with one argument: interpret as `Modf(x)` and use `f.RoundingMode`.
+		if x, ok := args[0].(*Float); ok {
+			x.doinit()
+			C.mpfr_modf(&intPart.mpfr[0], &fracPart.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+		} else if rnd, rOk := args[0].(Rnd); rOk {
+			// Called with one argument: interpret as `Modf(rnd)`.
+			f.doinit()
+			C.mpfr_modf(&intPart.mpfr[0], &fracPart.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(rnd))
+		} else {
+			panic("Modf expects a *Float as the first argument")
+		}
+	} else if len(args) > 1 {
+		// Called with two arguments: interpret as `Modf(x, rnd)`.
+		if x, xOk := args[0].(*Float); xOk {
+			if rnd, rOk := args[1].(Rnd); rOk {
+				x.doinit()
+				C.mpfr_modf(&intPart.mpfr[0], &fracPart.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(rnd))
+			} else {
+				panic("Modf expects an Rnd as the second argument")
+			}
+		} else {
+			panic("Modf expects a *Float as the first argument")
+		}
+	}
+
 	return intPart, fracPart
+}
+
+// Modf splits a value into its integer and fractional parts, with rounding mode specified.
+func Modf(x *Float, rnd Rnd) (intPart, fracPart *Float) {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Modf(x)
 }
 
 // MPMemoryCleanup releases any memory that MPFR might be caching for internal purposes.
@@ -1537,53 +2225,279 @@ func MPMemoryCleanup() {
 	C.mpfr_mp_memory_cleanup()
 }
 
-// Neg sets f = -x, with rounding mode rnd, and returns f.
-func (f *Float) Neg(x *Float) *Float {
-	x.doinit()
+// Neg negates the value of the receiver `f` or any number of provided Float arguments
+// and stores the result in the receiver `f`.
+//
+// If called with no arguments, the function negates the current value of the receiver `f`
+// in place, modifying `f` and returning it.
+//
+// If called with one or more arguments, the function iteratively negates the provided values,
+// storing the first negated value in the receiver `f`.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Negate a single value:
+//	x := NewFloat().SetFloat64(3.5)
+//	f := NewFloat()
+//	f.Neg(x) // f is now -3.5
+//
+//	// Negate the receiver's value in place:
+//	f.SetFloat64(-2.7)
+//	f.Neg() // f is now 2.7
+//
+//	// Negate multiple values (result holds the negation of the last argument):
+//	y := NewFloat().SetFloat64(-4.1)
+//	z := NewFloat().SetFloat64(-5.0)
+//	f.Neg(x, y, z) // f is now 4.1
+//
+// Notes:
+// - If called with arguments, all provided Float values must be initialized before the call.
+// - If called without arguments, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - For multiple arguments, the result stored in `f` corresponds to the negation of the last argument.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Neg(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_neg(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Negate the receiver's value in place.
+		C.mpfr_neg(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// negate the first non-nil argument and store the result in f
+		for _, x := range args {
+			if x != nil {
+				x.doinit()
+				C.mpfr_neg(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+				break
+			}
+		}
+	}
+
 	return f
 }
 
-// NextAbove sets f to the next representable floating-point value above x (toward +∞).
-// Then returns f.
-func (f *Float) NextAbove(x *Float) *Float {
-	x.doinit()
+// NextAbove sets the receiver `f` to the next representable floating-point value
+// above its current value or the value of `x` (toward +∞).
+//
+// If called with no arguments, the function increments the value of the receiver `f`
+// to the next representable floating-point value above its current value, modifying `f`
+// and returning it.
+//
+// If called with one argument `x`, the function sets `f` to the value of `x` and
+// increments it to the next representable floating-point value above `x`, modifying `f`
+// and returning it.
+//
+// Example Usage:
+//
+//	// Increment the value of x to the next representable value above:
+//	x := NewFloat().SetFloat64(3.5)
+//	f := NewFloat()
+//	f.NextAbove(x) // f is now the next representable value above 3.5
+//
+//	// Increment the receiver's value in place:
+//	f.SetFloat64(2.7)
+//	f.NextAbove() // f is now the next representable value above 2.7
+//
+// Notes:
+// - If called with an argument `x`, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - The function respects the precision and rounding mode of the receiver `f`.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) NextAbove(args ...*Float) *Float {
 	f.doinit()
-	// Copy x into f, then move f one step above.
-	C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
-	C.mpfr_nextabove(&f.mpfr[0])
+
+	if len(args) == 0 {
+		// Increment the receiver's value in place.
+		C.mpfr_nextabove(&f.mpfr[0])
+	} else {
+		// Set the receiver `f` to the value of `x`, then increment `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+		C.mpfr_nextabove(&f.mpfr[0])
+	}
+
 	return f
 }
 
-// NextBelow sets f to the next representable floating-point value below x (toward -∞).
-// Then returns f.
-func (f *Float) NextBelow(x *Float) *Float {
-	x.doinit()
+// NextAbove returns the next representable floating-point value above x.
+func NextAbove(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.NextAbove(x)
+}
+
+// NextBelow sets the receiver `f` to the next representable floating-point value
+// below its current value or the value of `x` (toward -∞).
+//
+// If called with no arguments, the function decrements the value of the receiver `f`
+// to the next representable floating-point value below its current value, modifying `f`
+// and returning it.
+//
+// If called with one argument `x`, the function sets `f` to the value of `x` and
+// decrements it to the next representable floating-point value below `x`, modifying `f`
+// and returning it.
+//
+// Example Usage:
+//
+//	// Decrement the value of x to the next representable value below:
+//	x := NewFloat().SetFloat64(3.5)
+//	f := NewFloat()
+//	f.NextBelow(x) // f is now the next representable value below 3.5
+//
+//	// Decrement the receiver's value in place:
+//	f.SetFloat64(2.7)
+//	f.NextBelow() // f is now the next representable value below 2.7
+//
+// Notes:
+// - If called with an argument `x`, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - The function respects the precision and rounding mode of the receiver `f`.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) NextBelow(args ...*Float) *Float {
 	f.doinit()
-	// Copy x into f, then move f one step below.
-	C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
-	C.mpfr_nextbelow(&f.mpfr[0])
+
+	if len(args) == 0 {
+		// Decrement the receiver's value in place.
+		C.mpfr_nextbelow(&f.mpfr[0])
+	} else if len(args) == 1 && args[0] != nil {
+		// Set the receiver `f` to the value of `x`, then decrement `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+		C.mpfr_nextbelow(&f.mpfr[0])
+	} else {
+		// Restrict to 0 or 1 arguments only.
+		panic("NextBelow accepts 0 or 1 arguments only")
+	}
+
 	return f
 }
 
-// NextToward sets f to the next representable floating-point value from x in the direction of y.
-// Then returns f.
-func (f *Float) NextToward(x, y *Float) *Float {
-	x.doinit()
-	y.doinit()
+// NextBelow returns the next representable floating-point value below x.
+func NextBelow(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.NextBelow(x)
+}
+
+// NextToward sets the receiver `f` to the next representable floating-point value
+// based on the provided arguments.
+//
+//   - If called with one argument `x`, the function moves `f` one step toward the value of `x`.
+//     This modifies `f` in place and returns it.
+//
+//   - If called with two arguments `x` and `y`, the function sets `f` to the value of `x` and
+//     moves it one step in the direction of `y`. This modifies `f` and returns it.
+//
+// Example Usage:
+//
+//	// Move f toward a single target value:
+//	x := NewFloat().SetFloat64(3.5)
+//	f := NewFloat().SetFloat64(2.0)
+//	f.NextToward(x) // f moves one step toward 3.5
+//
+//	// Move from x toward y:
+//	x := NewFloat().SetFloat64(3.5)
+//	y := NewFloat().SetFloat64(4.0)
+//	f.NextToward(x, y) // f is set to 3.5, then moves one step toward 4.0
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called with two arguments, both `x` and `y` must be initialized before the call.
+// - The computation respects the precision and rounding mode of the receiver `f`.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) NextToward(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
-	C.mpfr_nexttoward(&f.mpfr[0], &y.mpfr[0])
+
+	if len(args) == 1 && args[0] != nil {
+		// Move `f` one step toward `x`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_nexttoward(&f.mpfr[0], &x.mpfr[0])
+	} else {
+		// Set `f` to `x` and move it one step in the direction of `y`.
+		x, y := args[0], args[1]
+		x.doinit()
+		y.doinit()
+		C.mpfr_set(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+		C.mpfr_nexttoward(&f.mpfr[0], &y.mpfr[0])
+	}
+
 	return f
 }
 
-// RecSqrt sets f = 1 / sqrt(x), using the specified rounding mode, and returns f.
-func (f *Float) RecSqrt(x *Float) *Float {
-	x.doinit()
+// NextToward returns the next representable floating-point value toward x.
+func NextToward(x *Float, y *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.NextToward(x, y)
+}
+
+// RecSqrt computes the reciprocal square root, 1 / sqrt(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes 1 / sqrt(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes 1 / sqrt(x) and stores the result in `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the reciprocal square root of a value:
+//	x := NewFloat().SetFloat64(4.0)
+//	f := NewFloat()
+//	f.RecSqrt(x) // f is now 1 / sqrt(4.0) = 0.5
+//
+//	// Compute the reciprocal square root in place:
+//	f.SetFloat64(9.0)
+//	f.RecSqrt() // f is now 1 / sqrt(9.0) = 0.333...
+//
+// Notes:
+// - If called with an argument `x`, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The function assumes that the input value is positive; behavior is undefined for negative values.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) RecSqrt(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_rec_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute 1 / sqrt(f) in place.
+		C.mpfr_rec_sqrt(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute 1 / sqrt(x) and store in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_rec_sqrt(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
 	return f
+}
+
+// RecSqrt computes the reciprocal square root, 1 / sqrt(x),
+func RecSqrt(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.RecSqrt(x)
 }
 
 // IsRegular returns true if f is a normal (regular) number.
@@ -1600,14 +2514,21 @@ func IsRegular(x *Float) bool {
 	return C.mpfr_regular_p(&x.mpfr[0]) != 0
 }
 
-// Reldiff sets f = the relative difference between x and y, i.e. |x - y| / max(|x|, |y|),
-// using the specified rounding mode, and returns f.
+// Reldiff sets f = the relative difference between x and y, i.e. |x - y| / max(|x|, |y|) and returns f.
 func (f *Float) Reldiff(x, y *Float) *Float {
 	x.doinit()
 	y.doinit()
 	f.doinit()
 	C.mpfr_reldiff(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Reldiff sets f = the relative difference between x and y, i.e. |x - y| / max(|x|, |y|),
+// using the specified rounding mode, and returns f.
+func Reldiff(x, y *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Reldiff(x, y)
 }
 
 // Remainder sets f = x - n * y, where n is an integer chosen so that f is in (-|y|/2, |y|/2].
@@ -1617,6 +2538,13 @@ func (f *Float) Remainder(x, y *Float) *Float {
 	f.doinit()
 	C.mpfr_remainder(&f.mpfr[0], &x.mpfr[0], &y.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Remainder returns x - n * y, where n is an integer chosen so that the returned value is in (-|y|/2, |y|/2],
+func Remainder(x, y *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Remainder(x, y)
 }
 
 // Remquo sets f = remainder of x / y, and also returns the integer quotient in an int.
@@ -1630,37 +2558,223 @@ func (f *Float) Remquo(x, y *Float) (int, *Float) {
 	return int(q), f
 }
 
-// Round sets f to the nearest integer value of x using the current MPFR rounding mode
-// (which is normally “round to nearest, ties away from zero”).
-func (f *Float) Round(x *Float) *Float {
-	x.doinit()
+// Remquo returns the remainder of x / y, and also returns the integer quotient in an int.
+func Remquo(x, y *Float, rnd Rnd) (int, *Float) {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Remquo(x, y)
+}
+
+// Round sets the receiver `f` to the nearest integer value based on the current MPFR rounding mode,
+// which is normally "round to nearest, ties away from zero".
+//
+//   - If called with no arguments, the function rounds the current value of the receiver `f` in place.
+//     This modifies `f` and returns it.
+//
+//   - If called with one argument `x`, the function rounds `x` to the nearest integer value and stores
+//     the result in the receiver `f`. This modifies `f` and returns it.
+//
+// Example Usage:
+//
+//	// Round a specific value:
+//	x := NewFloat().SetFloat64(3.6)
+//	f := NewFloat()
+//	f.Round(x) // f is now 4.0
+//
+//	// Round the receiver's value in place:
+//	f.SetFloat64(-2.4)
+//	f.Round() // f is now -2.0
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The rounding mode used depends on the receiver `f`'s rounding mode (default: ties away from zero).
+//   - This function does not raise exceptions for special cases like infinities or NaNs; the behavior
+//     depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Round(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_round(&f.mpfr[0], &x.mpfr[0])
+
+	if len(args) == 0 {
+		// Round the current value of the receiver `f` in place.
+		C.mpfr_round(&f.mpfr[0], &f.mpfr[0])
+	} else {
+		// Round `x` and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_round(&f.mpfr[0], &x.mpfr[0])
+	}
+
 	return f
 }
 
-// RoundEven sets f = x rounded to the nearest integer, with ties to even.
-func (f *Float) RoundEven(x *Float) *Float {
-	x.doinit()
+// Round returns the nearest integer value based on the current MPFR rounding mode.
+func Round(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Round(x)
+}
+
+// RoundEven sets the receiver `f` to the nearest integer value based on the "round to nearest, ties to even" rule.
+// This is also known as "bankers' rounding."
+//
+//   - If called with no arguments, the function rounds the current value of the receiver `f` in place.
+//     This modifies `f` and returns it.
+//
+//   - If called with one argument `x`, the function rounds `x` to the nearest integer value with ties to even
+//     and stores the result in the receiver `f`. This modifies `f` and returns it.
+//
+// Example Usage:
+//
+//	// Round a specific value using ties-to-even rule:
+//	x := NewFloat().SetFloat64(2.5)
+//	f := NewFloat()
+//	f.RoundEven(x) // f is now 2.0 (2.5 rounds to 2.0)
+//
+//	// Round the receiver's value in place:
+//	f.SetFloat64(3.5)
+//	f.RoundEven() // f is now 4.0 (3.5 rounds to 4.0)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - This function always uses the "round to nearest, ties to even" rule, regardless of the rounding mode of `f`.
+// - The function does not raise exceptions for special cases like infinities or NaNs; the behavior depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) RoundEven(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_roundeven(&f.mpfr[0], &x.mpfr[0])
+
+	if len(args) == 0 {
+		// Round the current value of the receiver `f` in place using ties-to-even.
+		C.mpfr_roundeven(&f.mpfr[0], &f.mpfr[0])
+	} else {
+		// Round `x` using ties-to-even and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_roundeven(&f.mpfr[0], &x.mpfr[0])
+	}
+
 	return f
 }
 
-// Sec sets f = sec(x) = 1/cos(x), with rounding mode rnd, and returns f.
-func (f *Float) Sec(x *Float) *Float {
-	x.doinit()
+// RoundEven returns x rounded to the nearest integer, with ties to even.
+func RoundEven(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.RoundEven(x)
+}
+
+// Sec computes the secant of a value, sec(x) = 1 / cos(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes sec(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes sec(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the secant of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Sec(x) // f is now 1 / cos(1.0)
+//
+//	// Compute the secant of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Sec() // f is now 1 / cos(0.5)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The secant function is undefined for odd multiples of π/2 (e.g., x = ±π/2, ±3π/2, ...),
+//     and the behavior in these cases depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Sec(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_sec(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute sec(f) in place.
+		C.mpfr_sec(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute sec(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_sec(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
-// Sech sets f = sech(x) = 1/cosh(x), with rounding mode rnd, and returns f.
-func (f *Float) Sech(x *Float) *Float {
-	x.doinit()
+// Sec computes the secant of a value, sec(x) = 1 / cos(x).
+func Sec(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Sec(x)
+}
+
+// Sech computes the hyperbolic secant of a value, sech(x) = 1 / cosh(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes sech(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes sech(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the hyperbolic secant of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Sech(x) // f is now 1 / cosh(1.0)
+//
+//	// Compute the hyperbolic secant of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Sech() // f is now 1 / cosh(0.5)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The hyperbolic secant is well-defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Sech(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_sech(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute sech(f) in place.
+		C.mpfr_sech(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute sech(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_sech(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
+}
+
+// Sech computes the hyperbolic secant of a value, sech(x) = 1 / cosh(x).
+func Sech(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Sech(x)
 }
 
 // Swap exchanges the contents of f and x (their mantissa, sign, exponent, etc.).
@@ -1670,44 +2784,276 @@ func (f *Float) Swap(x *Float) {
 	C.mpfr_swap(&f.mpfr[0], &x.mpfr[0])
 }
 
-// Tan sets f = tan(x), using rounding mode rnd, and returns f.
-func (f *Float) Tan(x *Float) *Float {
-	x.doinit()
+// Tan computes the tangent of a value, tan(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes tan(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes tan(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the tangent of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Tan(x) // f is now tan(1.0)
+//
+//	// Compute the tangent of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Tan() // f is now tan(0.5)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The tangent function is undefined for odd multiples of π/2 (e.g., x = ±π/2, ±3π/2, ...),
+//     and the behavior in these cases depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Tan(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_tan(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute tan(f) in place.
+		C.mpfr_tan(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute tan(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_tan(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
-// Tanh sets f = tanh(x), using rounding mode rnd, and returns f.
-func (f *Float) Tanh(x *Float) *Float {
-	x.doinit()
+// Tan computes the tangent of a value, tan(x).
+func Tan(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Tan(x)
+}
+
+// Tanh computes the hyperbolic tangent of a value, tanh(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes tanh(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes tanh(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the hyperbolic tangent of a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Tanh(x) // f is now tanh(1.0)
+//
+//	// Compute the hyperbolic tangent of the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Tanh() // f is now tanh(0.5)
+//
+// Notes:
+// - If called with one argument, `x` must be initialized before the call.
+// - If called without an argument, only the receiver `f` must be initialized.
+// - The computation uses the `RoundingMode` of the receiver `f`.
+// - The hyperbolic tangent function, tanh(x), is well-defined for all real numbers.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Tanh(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_tanh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute tanh(f) in place.
+		C.mpfr_tanh(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else if len(args) == 1 && args[0] != nil {
+		// Compute tanh(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_tanh(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Restrict to 0 or 1 arguments only.
+		panic("Tanh accepts 0 or 1 arguments only")
+	}
+
 	return f
 }
 
-// Trunc sets f = the integer part of x, truncated toward zero, and returns f.
-func (f *Float) Trunc(x *Float) *Float {
-	x.doinit()
+// Tanh computes the hyperbolic tangent of a value, tanh(x).
+func Tanh(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Tanh(x)
+}
+
+// Trunc computes the integer part of a value truncated toward zero and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function truncates the current value of `f` toward zero.
+//     This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function truncates `x` toward zero and stores the result in `f`.
+//     This modifies `f` and returns it.
+//
+// Example Usage:
+//
+//	// Truncate a specific value:
+//	x := NewFloat().SetFloat64(3.7)
+//	f := NewFloat()
+//	f.Trunc(x) // f is now 3.0
+//
+//	// Truncate the receiver's value in place:
+//	f.SetFloat64(-2.8)
+//	f.Trunc() // f is now -2.0
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The truncation operation always rounds toward zero, regardless of the rounding mode of `f`.
+//   - The function does not raise exceptions for special cases like infinities or NaNs; behavior
+//     depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Trunc(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_trunc(&f.mpfr[0], &x.mpfr[0])
+
+	if len(args) == 0 {
+		// Truncate the current value of `f` in place.
+		C.mpfr_trunc(&f.mpfr[0], &f.mpfr[0])
+	} else {
+		// Truncate `x` and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_trunc(&f.mpfr[0], &x.mpfr[0])
+	}
+
 	return f
 }
 
-// Y0 sets f = Y0(x) (the Bessel function of the second kind of order 0), using rnd, and returns f.
-func (f *Float) Y0(x *Float) *Float {
-	x.doinit()
+// Trunc returns the integer part of x truncated toward zero.
+func Trunc(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Trunc(x)
+}
+
+// Y0 computes the Bessel function of the second kind of order 0, Y₀(x),
+// and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes Y₀(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes Y₀(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the Bessel function of the second kind for a specific value:
+//	x := NewFloat().SetFloat64(1.0)
+//	f := NewFloat()
+//	f.Y0(x) // f is now Y₀(1.0)
+//
+//	// Compute the Bessel function of the second kind for the receiver's value in place:
+//	f.SetFloat64(0.5)
+//	f.Y0() // f is now Y₀(0.5)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The Bessel function Y₀(x) is undefined for non-positive values of `x` (x <= 0),
+//     and the behavior in these cases depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Y0(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_y0(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute Y₀(f) in place.
+		C.mpfr_y0(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute Y₀(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_y0(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
 }
 
-// Y1 sets f = Y1(x) (the Bessel function of the second kind of order 1), using rnd, and returns f.
-func (f *Float) Y1(x *Float) *Float {
-	x.doinit()
+// Y0 computes the Bessel function of the second kind of order 0, Y₀(x).
+func Y0(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Y0(x)
+}
+
+// Y1 computes the Bessel function of the second kind of order 1, Y₁(x),
+// and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes Y₁(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes Y₁(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the Bessel function of the second kind for a specific value:
+//	x := NewFloat().SetFloat64(2.0)
+//	f := NewFloat()
+//	f.Y1(x) // f is now Y₁(2.0)
+//
+//	// Compute the Bessel function of the second kind for the receiver's value in place:
+//	f.SetFloat64(1.0)
+//	f.Y1() // f is now Y₁(1.0)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The Bessel function Y₁(x) is undefined for non-positive values of `x` (x <= 0),
+//     and the behavior in these cases depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Y1(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_y1(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute Y₁(f) in place.
+		C.mpfr_y1(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute Y₁(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_y1(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
+}
+
+// Y1 computes the Bessel function of the second kind of order 1, Y₁(x).
+func Y1(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Y1(x)
 }
 
 // Yn sets f = Yn(n, x) (the Bessel function of the second kind of order n),
@@ -1717,6 +3063,13 @@ func (f *Float) Yn(n int, x *Float) *Float {
 	f.doinit()
 	C.mpfr_yn(&f.mpfr[0], C.long(n), &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
 	return f
+}
+
+// Yn returns Yn(n, x) (the Bessel function of the second kind of order n).
+func Yn(n int, x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Yn(n, x)
 }
 
 // IsZero returns true if f is exactly zero (positive or negative zero).
@@ -1731,12 +3084,58 @@ func IsZero(x *Float) bool {
 	return C.mpfr_zero_p(&x.mpfr[0]) != 0
 }
 
-// Zeta sets f = ζ(x) (the Riemann zeta function), using rounding mode rnd, and returns f.
-func (f *Float) Zeta(x *Float) *Float {
-	x.doinit()
+// Zeta computes the Riemann zeta function, ζ(x), and stores the result in the receiver `f`.
+//
+//   - If called with no arguments, the function computes ζ(f), where `f` is the current value
+//     of the receiver. This modifies `f` in place and returns it.
+//
+//   - If called with one argument `x`, the function computes ζ(x) and stores the result in the receiver `f`.
+//     This modifies `f` and returns it.
+//
+// The result is computed using the rounding mode specified by the receiver `f`'s RoundingMode.
+//
+// Example Usage:
+//
+//	// Compute the Riemann zeta function for a specific value:
+//	x := NewFloat().SetFloat64(2.0)
+//	f := NewFloat()
+//	f.Zeta(x) // f is now ζ(2.0)
+//
+//	// Compute the Riemann zeta function for the receiver's value in place:
+//	f.SetFloat64(3.0)
+//	f.Zeta() // f is now ζ(3.0)
+//
+// Notes:
+//   - If called with one argument, `x` must be initialized before the call.
+//   - If called without an argument, only the receiver `f` must be initialized.
+//   - The computation uses the `RoundingMode` of the receiver `f`.
+//   - The Riemann zeta function ζ(x) is undefined for x = 1 (pole at x = 1),
+//     and behavior for x ≤ 0 depends on the MPFR library.
+//
+// Returns:
+//
+//	A pointer to the modified receiver `f`.
+func (f *Float) Zeta(args ...*Float) *Float {
 	f.doinit()
-	C.mpfr_zeta(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+
+	if len(args) == 0 {
+		// Compute ζ(f) in place.
+		C.mpfr_zeta(&f.mpfr[0], &f.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	} else {
+		// Compute ζ(x) and store the result in `f`.
+		x := args[0]
+		x.doinit()
+		C.mpfr_zeta(&f.mpfr[0], &x.mpfr[0], C.mpfr_rnd_t(f.RoundingMode))
+	}
+
 	return f
+}
+
+// Zeta computes the Riemann zeta function, ζ(x).
+func Zeta(x *Float, rnd Rnd) *Float {
+	f := NewFloat()
+	f.SetRoundMode(rnd)
+	return f.Zeta(x)
 }
 
 // SetPrec sets the precision of the Float to the specified number of bits.

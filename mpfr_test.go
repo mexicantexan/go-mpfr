@@ -117,10 +117,21 @@ func TestSub(t *testing.T) {
 	diff := mpfr.NewFloat().Sub(x, y)
 
 	got := diff.GetFloat64()
-	want := 1.9
+	want := -8.1
 	// Floating-point inexactness is possible, so you might do an approximate check
 	if got != want {
 		t.Errorf("5.0 - 3.1 = %v; want %v", got, want)
+	}
+
+	got2 := x.Sub(y)
+	want2 := 1.9
+	if got2.GetFloat64() != want2 {
+		t.Errorf("5.0 - 3.1 = %v; want %v", got2.GetFloat64(), want2)
+	}
+
+	got3 := mpfr.Sub(mpfr.FromFloat64(5.0), y, mpfr.RoundToNearest)
+	if got3.GetFloat64() != want2 {
+		t.Errorf("5.0 - 3.1 = %v; want %v", got3.GetFloat64(), want2)
 	}
 }
 
@@ -130,9 +141,21 @@ func TestMul(t *testing.T) {
 	product := mpfr.NewFloat().Mul(x, y)
 
 	got := product.GetFloat64()
-	want := 6.5
+	want := 0.0
 	if got != want {
 		t.Errorf("2.0 * 3.25 = %v; want %v", got, want)
+	}
+
+	got2 := x.Mul(y)
+	want2 := float64(6.5)
+	// check got2 output type
+	if !almostEqual(got2.GetFloat64(), want2) {
+		t.Errorf("2.0 * 3.25 = %v; want %v", got2.GetFloat64(), want2)
+	}
+
+	got3 := mpfr.Mul(mpfr.FromFloat64(2.0), y, mpfr.RoundToNearest)
+	if !almostEqual(got3.GetFloat64(), want2) {
+		t.Errorf("2.0 * 3.25 = %v; want %v", got3.GetFloat64(), want2)
 	}
 }
 
@@ -142,9 +165,19 @@ func TestDiv(t *testing.T) {
 	quotient := mpfr.NewFloat().Div(x, y)
 
 	got := quotient.GetFloat64()
-	want := 2.5
+	want := 0.0
 	if got != want {
-		t.Errorf("10.0 / 4.0 = %v; want %v", got, want)
+		t.Errorf("0.0 / 10.0 / 4.0 = %v; want %v", got, want)
+	}
+	got2 := x.Div(y)
+	want2 := 2.5
+	if !almostEqual(got2.GetFloat64(), want2) {
+		t.Errorf("10.0 / 4.0 = %v; want %v", got2.GetFloat64(), want2)
+	}
+
+	got3 := mpfr.Div(mpfr.FromFloat64(10.0), y, mpfr.RoundToNearest)
+	if !almostEqual(got3.GetFloat64(), want2) {
+		t.Errorf("10.0 / 4.0 = %v; want %v", got3.GetFloat64(), want2)
 	}
 }
 
@@ -275,10 +308,14 @@ func TestLog(t *testing.T) {
 
 func TestAbs(t *testing.T) {
 	x := mpfr.NewFloat().SetFloat64(-3.5)
-	got := mpfr.Abs(x)
+	got := mpfr.NewFloat().Abs(x)
 	want := 3.5
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Abs(-3.5) got %v; want %v", got, want)
+	}
+	got2 := x.Abs()
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Abs(-3.5) got %v; want %v", got2, want)
 	}
 }
 
