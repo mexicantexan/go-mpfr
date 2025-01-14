@@ -60,7 +60,7 @@ func main() {
 	y = mpfr.FromFloat64(2.25)
 	z := mpfr.FromFloat64(3.75)
 	w := mpfr.FromFloat64(1.0)
-    x.Add(y, z, w)
+        x.Add(y, z, w)
 	fmt.Printf("1.5 + 2.25 + 3.75 + 1.0 = %v\n", x.Float64())
 	
 	// set precision 
