@@ -2061,9 +2061,8 @@ func (f *Float) Max(args ...*Float) *Float {
 
 // MaxFloat computes the maximum value among x and y, using the given rounding mode.
 func MaxFloat(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Max(x, y)
+	x.SetRoundMode(rnd)
+	return x.Max(y)
 }
 
 // Min computes the minimum value among the receiver `f` and any number of additional Float arguments.
@@ -2113,9 +2112,8 @@ func (f *Float) Min(args ...*Float) *Float {
 
 // MinFloat computes the minimum value among x and y, using the given rounding mode.
 func MinFloat(x, y *Float, rnd Rnd) *Float {
-	f := NewFloat()
-	f.SetRoundMode(rnd)
-	return f.Min(x, y)
+	x.SetRoundMode(rnd)
+	return x.Min(y)
 }
 
 // MinPrec returns the minimum of the precisions of x and y.

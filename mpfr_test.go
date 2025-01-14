@@ -157,6 +157,16 @@ func TestMul(t *testing.T) {
 	if !almostEqual(got3.GetFloat64(), want2) {
 		t.Errorf("2.0 * 3.25 = %v; want %v", got3.GetFloat64(), want2)
 	}
+
+	// test 4 values
+	x = mpfr.NewFloat().SetFloat64(2.0)
+	y = mpfr.NewFloat().SetFloat64(3.25)
+	z := mpfr.NewFloat().SetFloat64(4.0)
+	w := mpfr.NewFloat().SetFloat64(5.0)
+	product = x.Mul(y, z, w)
+	if product.GetFloat64() != 2.0*3.25*4.0*5.0 {
+		t.Errorf("2.0 * 3.25 * 4.0 * 5.0 = %v; want %v", product.GetFloat64(), 2.0*3.25*4.0*5.0)
+	}
 }
 
 func TestDiv(t *testing.T) {
@@ -313,6 +323,7 @@ func TestAbs(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Abs(-3.5) got %v; want %v", got, want)
 	}
+	x = mpfr.FromFloat64(-3.5)
 	got2 := x.Abs()
 	if !almostEqual(got2.GetFloat64(), want) {
 		t.Errorf("Abs(-3.5) got %v; want %v", got2, want)
@@ -326,6 +337,14 @@ func TestAcos(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Acos(1.0) got %v; want %v", got, want)
 	}
+	got2 := mpfr.Acos(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Acos(1.0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Acos()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Acos(1.0) got %v; want %v", got3.GetFloat64(), want)
+	}
 }
 
 func TestAcosh(t *testing.T) {
@@ -335,6 +354,14 @@ func TestAcosh(t *testing.T) {
 	want := 0.0
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Acosh(1.0) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Acosh(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Acosh(1.0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Acosh()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Acosh(1.0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -350,6 +377,10 @@ func TestAgm(t *testing.T) {
 	if math.Abs(gotF-want) > 1e-6 {
 		t.Errorf("Agm(1,9) ~ %v; want ~2.986415", gotF)
 	}
+	got2 := mpfr.Agm(a, b, mpfr.RoundToNearest)
+	if math.Abs(got2.GetFloat64()-want) > 1e-6 {
+		t.Errorf("Agm(1,9) ~ %v; want ~2.986415", got2.GetFloat64())
+	}
 }
 
 func TestAsin(t *testing.T) {
@@ -358,6 +389,14 @@ func TestAsin(t *testing.T) {
 	want := 0.0 // asin(0) = 0
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Asin(0) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Asin(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Asin(0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Asin()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Asin(0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -368,6 +407,14 @@ func TestAsinh(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Asinh(0) got %v; want %v", got, want)
 	}
+	got2 := mpfr.Asinh(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Asinh(0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Asinh()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Asinh(0) got %v; want %v", got3.GetFloat64(), want)
+	}
 }
 
 func TestAtan(t *testing.T) {
@@ -376,6 +423,14 @@ func TestAtan(t *testing.T) {
 	want := 0.0 // atan(0) = 0
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Atan(0) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Atan(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Atan(0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Atan()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Atan(0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -388,6 +443,11 @@ func TestAtan2(t *testing.T) {
 	if math.Abs(got.GetFloat64()-want) > 1e-14 {
 		t.Errorf("Atan2(1,1) got %v; want %v", got, want)
 	}
+	got2 := mpfr.Atan2(y, x, mpfr.RoundToNearest)
+	if math.Abs(got2.GetFloat64()-want) > 1e-14 {
+		t.Errorf("Atan2(1,1) got %v; want %v", got2.GetFloat64(), want)
+	}
+
 }
 
 func TestAtanh(t *testing.T) {
@@ -396,6 +456,14 @@ func TestAtanh(t *testing.T) {
 	want := 0.0 // atanh(0) = 0
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Atanh(0) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Atanh(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Atanh(0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Atanh()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Atanh(0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -490,9 +558,13 @@ func TestCeil(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Ceil(3.1) got %v; want %v", got, want)
 	}
-	got2 := x.Ceil()
+	got2 := mpfr.Ceil(x, mpfr.RoundToNearest)
 	if !almostEqual(got2.GetFloat64(), want) {
-		t.Errorf("Ceil(3.1) got %v; want %v", got2, want)
+		t.Errorf("Ceil(3.1) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Ceil()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Ceil(3.1) got %v; want %v", got3, want)
 	}
 }
 
@@ -513,9 +585,13 @@ func TestCos(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Cos(0) got %v; want %v", got, want)
 	}
-	got2 := x.Cos()
+	got2 := mpfr.Cos(x, mpfr.RoundToNearest)
 	if !almostEqual(got2.GetFloat64(), want) {
-		t.Errorf("Cos(0) got %v; want %v", got2, want)
+		t.Errorf("Cos(0) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Cos()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Cos(0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -525,6 +601,14 @@ func TestCosh(t *testing.T) {
 	want := 1.0 // cosh(0)=1
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Cosh(0) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Cosh(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Cosh(0) got %v; want %v", got2, want)
+	}
+	got3 := x.Cosh()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Cosh(0) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -537,16 +621,32 @@ func TestCot(t *testing.T) {
 	if math.Abs(got.GetFloat64()-want) > 1e-7 {
 		t.Errorf("Cot(pi/4) got %v; want %v", got, want)
 	}
+	got2 := mpfr.Cot(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Cot(pi/4) got %v; want %v", got2.GetFloat64(), want)
+	}
+	got3 := x.Cot()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Cot(pi/4) got %v; want %v", got3.GetFloat64(), want)
+	}
 }
 
 func TestCoth(t *testing.T) {
 	// coth(1) ~ 1.313035285
 	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Coth(x)
-	want := 1.313035285
+	want := 1.3130352854993312
 	diff := math.Abs(got.GetFloat64() - want)
 	if diff > 1e-7 {
 		t.Errorf("Coth(1) got %v; want ~1.313035285", got)
+	}
+	got2 := mpfr.Coth(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Coth(1) got %v; want ~1.313035285", got2.GetFloat64())
+	}
+	got3 := x.Coth()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Coth(1) got %v; want ~1.313035285", got3.GetFloat64())
 	}
 }
 
@@ -559,17 +659,34 @@ func TestCsc(t *testing.T) {
 	if math.Abs(got.GetFloat64()-want) > 1e-7 {
 		t.Errorf("Csc(pi/2) got %v; want 1.0", got)
 	}
+	got2 := mpfr.Csc(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Csc(pi/2) got %v; want 1.0", got2.GetFloat64())
+	}
+	got3 := x.Csc()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Csc(pi/2) got %v; want 1.0", got3.GetFloat64())
+	}
 }
 
 func TestCsch(t *testing.T) {
 	// csch(1) ~ 0.850918128
 	x := mpfr.NewFloat().SetFloat64(1.0)
 	got := mpfr.NewFloat().Csch(x)
-	want := 0.850918128
+	want := 0.8509181282393216
 	diff := math.Abs(got.GetFloat64() - want)
 	if diff > 1e-7 {
-		t.Errorf("Csch(1) got %v; want ~0.850918128", got)
+		t.Errorf("Csch(1) got %v; want ~0.8509181282393216", got)
 	}
+	got2 := mpfr.Csch(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Csch(1) got %v; want ~0.8509181282393216", got2.GetFloat64())
+	}
+	got3 := x.Csch()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Csch(1) got %v; want ~0.8509181282393216", got3.GetFloat64())
+	}
+
 }
 
 func TestExp10(t *testing.T) {
@@ -578,6 +695,10 @@ func TestExp10(t *testing.T) {
 	want := 100.0 // 10^2 = 100
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Exp10(2) got %v; want %v", got, want)
+	}
+	got2 := mpfr.Exp10(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Exp10(2) got %v; want %v", got2.GetFloat64(), want)
 	}
 }
 
@@ -588,14 +709,28 @@ func TestExp2(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Exp2(3) got %v; want %v", got, want)
 	}
+	got2 := mpfr.Exp2(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Exp2(3) got %v; want %v", got2.GetFloat64(), want)
+	}
 }
 
 func TestFloor(t *testing.T) {
-	x := mpfr.NewFloat().SetFloat64(3.9)
+	x := mpfr.FromFloat64(3.9)
 	got := mpfr.NewFloat().Floor(x)
 	want := 3.0
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Floor(3.9) got %v; want %v", got, want)
+	}
+	x = mpfr.FromFloat64(3.9)
+	got2 := mpfr.Floor(x, mpfr.RoundToNearest)
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Floor(3.9) got %v; want %v", got2.GetFloat64(), want)
+	}
+	x = mpfr.FromFloat64(3.9)
+	got3 := x.Floor()
+	if !almostEqual(got3.GetFloat64(), want) {
+		t.Errorf("Floor(3.9) got %v; want %v", got3.GetFloat64(), want)
 	}
 }
 
@@ -814,7 +949,7 @@ func TestBigFloat(t *testing.T) {
 func TestMax(t *testing.T) {
 	x := mpfr.NewFloat().SetFloat64(3.0)
 	y := mpfr.NewFloat().SetFloat64(2.0)
-	result := mpfr.NewFloat().Max(x, y)
+	result := mpfr.MaxFloat(x, y, mpfr.RoundToNearest)
 
 	got := result.GetFloat64()
 	want := 3.0
@@ -836,11 +971,45 @@ func TestMax(t *testing.T) {
 	seriesOfNumbers := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
 	seriesOfFloats := make([]*mpfr.Float, len(seriesOfNumbers))
 	for idn, num := range seriesOfNumbers {
-		seriesOfFloats[idn] = mpfr.NewFloat().SetFloat64(num)
+		seriesOfFloats[idn] = mpfr.FromFloat64(num)
 	}
-	initMax := mpfr.NewFloat().SetFloat64(seriesOfNumbers[0])
+	initMax := mpfr.FromFloat64(seriesOfNumbers[0])
 	got4 := initMax.Max(seriesOfFloats[1:]...)
 	if got4.GetFloat64() != 5.0 {
 		t.Errorf("Max(1.0, 2.0, 3.0, 4.0, 5.0) = %v; want 5.0", got4.GetFloat64())
+	}
+}
+
+func TestMin(t *testing.T) {
+	x := mpfr.NewFloat().SetFloat64(3.0)
+	y := mpfr.NewFloat().SetFloat64(2.0)
+	result := mpfr.MinFloat(x, y, mpfr.RoundToNearest)
+
+	got := result.GetFloat64()
+	want := 2.0
+	if got != want {
+		t.Errorf("Min(3.0, 2.0) = %v; want %v", got, want)
+	}
+
+	got2 := x.Min(y)
+	if got2.GetFloat64() != want {
+		t.Errorf("Min(3.0, 2.0) = %v; want %v", got2.GetFloat64(), want)
+	}
+
+	got3 := y.Min(x)
+	if got3.GetFloat64() != want {
+		t.Errorf("Min(2.0, 3.0) = %v; want %v", got3.GetFloat64(), want)
+	}
+
+	// overload with multiple arguments
+	seriesOfNumbers := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
+	seriesOfFloats := make([]*mpfr.Float, len(seriesOfNumbers))
+	for idn, num := range seriesOfNumbers {
+		seriesOfFloats[idn] = mpfr.FromFloat64(num)
+	}
+	initMin := mpfr.FromFloat64(seriesOfNumbers[0])
+	got4 := initMin.Min(seriesOfFloats[1:]...)
+	if got4.GetFloat64() != 1.0 {
+		t.Errorf("Min(1.0, 2.0, 3.0, 4.0, 5.0) = %v; want 1.0", got4.GetFloat64())
 	}
 }
