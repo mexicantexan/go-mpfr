@@ -275,7 +275,7 @@ func TestLog(t *testing.T) {
 
 func TestAbs(t *testing.T) {
 	x := mpfr.NewFloat().SetFloat64(-3.5)
-	got := mpfr.NewFloat().Abs(x)
+	got := mpfr.Abs(x)
 	want := 3.5
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Abs(-3.5) got %v; want %v", got, want)
@@ -453,6 +453,10 @@ func TestCeil(t *testing.T) {
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Ceil(3.1) got %v; want %v", got, want)
 	}
+	got2 := x.Ceil()
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Ceil(3.1) got %v; want %v", got2, want)
+	}
 }
 
 func TestCmpAbs(t *testing.T) {
@@ -471,6 +475,10 @@ func TestCos(t *testing.T) {
 	want := 1.0 // cos(0)=1
 	if !almostEqual(got.GetFloat64(), want) {
 		t.Errorf("Cos(0) got %v; want %v", got, want)
+	}
+	got2 := x.Cos()
+	if !almostEqual(got2.GetFloat64(), want) {
+		t.Errorf("Cos(0) got %v; want %v", got2, want)
 	}
 }
 
@@ -594,7 +602,7 @@ func TestSetPrec(t *testing.T) {
 	// Set precision to 128 bits
 	f.SetPrec(128)
 	got := f.GetFloat64()
-	want := 0.0 // After setting precision, value should be cleared
+	want := 3.141592653589793
 
 	if got != want {
 		t.Errorf("SetPrec(128) got %v; want %v", got, want)
@@ -763,5 +771,39 @@ func TestBigFloat(t *testing.T) {
 		if diff.Cmp(bigFloatEps) > 0 {
 			t.Errorf("BigFloat(%v) got %v; want %v", tt.input, got, tt.expected)
 		}
+	}
+}
+
+func TestMax(t *testing.T) {
+	x := mpfr.NewFloat().SetFloat64(3.0)
+	y := mpfr.NewFloat().SetFloat64(2.0)
+	result := mpfr.NewFloat().Max(x, y)
+
+	got := result.GetFloat64()
+	want := 3.0
+	if got != want {
+		t.Errorf("Max(3.0, 2.0) = %v; want %v", got, want)
+	}
+
+	got2 := x.Max(y)
+	if got2.GetFloat64() != want {
+		t.Errorf("Max(3.0, 2.0) = %v; want %v", got2.GetFloat64(), want)
+	}
+
+	got3 := y.Max(x)
+	if got3.GetFloat64() != want {
+		t.Errorf("Max(2.0, 3.0) = %v; want %v", got3.GetFloat64(), want)
+	}
+
+	// overload with multiple arguments
+	seriesOfNumbers := []float64{1.0, 2.0, 3.0, 4.0, 5.0}
+	seriesOfFloats := make([]*mpfr.Float, len(seriesOfNumbers))
+	for idn, num := range seriesOfNumbers {
+		seriesOfFloats[idn] = mpfr.NewFloat().SetFloat64(num)
+	}
+	initMax := mpfr.NewFloat().SetFloat64(seriesOfNumbers[0])
+	got4 := initMax.Max(seriesOfFloats[1:]...)
+	if got4.GetFloat64() != 5.0 {
+		t.Errorf("Max(1.0, 2.0, 3.0, 4.0, 5.0) = %v; want 5.0", got4.GetFloat64())
 	}
 }
