@@ -27,6 +27,26 @@ sudo apt-get update && sudo apt-get install libmpfr-dev libgmp-dev
 brew install mpfr gmp
 ```
 
+**Windows**:
+
+Using MSYS2 Package Manager:
+```bash
+pacman -S mingw-w64-x86_64-gmp mingw-w64-x86_64-mpfr
+```
+Using Chocolatey or Scoop:
+
+ - Install Chocolatey or Scoop.
+
+Installing via Chocolatey
+```bash
+choco install gmp mpfr
+```
+Or with Scoop:
+```bash
+scoop install gmp mpfr
+```
+
+
 Then, install the package using `go get`:
 ```bash
 go get github.com/mexicantexan/go-mpfr
