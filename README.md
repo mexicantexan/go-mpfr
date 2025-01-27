@@ -103,7 +103,7 @@ go run main.go
 We welcome contributions! See our [CONTRIBUTING](https://github.com/mexicantexan/go-mpfr/blob/master/CONTRIBUTING.md) guide (TODO) for how to get started.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
+Please see the [LICENSE](https://github.com/mexicantexan/go-mpfr/blob/master/LICENSE) file for details.
 
 ## Support the Project
 If you find this project helpful and would like to support its development:
